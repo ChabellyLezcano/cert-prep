@@ -90,6 +90,7 @@ export const en = {
   // Mock exam
   'mockExam.source.unanswered': 'Unanswered',
   'mockExam.source.answered': 'Already answered',
+  'mockExam.source.wrong': 'Previously incorrect',
   'mockExam.source.both': 'Both',
   'mockExam.finishedTitle': 'Exam finished ·',
   'mockExam.scoreLine': '{correct}/{total} correct',
@@ -264,6 +265,7 @@ export const es: Record<TranslationKey, string> = {
   // Mock exam
   'mockExam.source.unanswered': 'Sin responder',
   'mockExam.source.answered': 'Ya respondidas',
+  'mockExam.source.wrong': 'Incorrectas',
   'mockExam.source.both': 'Ambas',
   'mockExam.finishedTitle': 'Examen finalizado ·',
   'mockExam.scoreLine': '{correct}/{total} correctas',

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { CheckCircle2, Flag, Target, XCircle } from 'lucide-react';
-import { DOMAIN_MAP } from '../data/domains';
+import { getDomain } from '../data/domains';
 import { Button } from '../../shared/components/Button';
 import { CircularProgress } from '../../shared/components/CircularProgress';
 import { useLocale } from '../../shared/i18n/useLocale';
@@ -52,10 +52,15 @@ export function MockExamPanel({
   const [totalQuestions, setTotalQuestions] = useState(45);
   const [source, setSource] = useState<MockExamSource>('both');
   const { t } = useLocale();
+  // A mock exam is always generated from a single certification's bank, so
+  // every question in it shares the same certId -- safe to read off the
+  // first one for domain lookups below.
+  const certId = active?.questions[0]?.certId;
 
   const sourceOptions: { value: MockExamSource; label: string }[] = [
     { value: 'unanswered', label: t('mockExam.source.unanswered') },
     { value: 'answered', label: t('mockExam.source.answered') },
+    { value: 'wrong', label: t('mockExam.source.wrong') },
     { value: 'both', label: t('mockExam.source.both') },
   ];
 
@@ -104,7 +109,7 @@ export function MockExamPanel({
             </h3>
             <div className="flex flex-col gap-2">
               {domainResults.map((result) => (
-                <DomainResultBar key={result.domain} result={result} />
+                <DomainResultBar key={result.domain} certId={certId} result={result} />
               ))}
             </div>
           </div>
@@ -139,7 +144,7 @@ export function MockExamPanel({
             <span
               key={entry.domain}
               className="rounded-full bg-surface px-2.5 py-1 text-xs font-medium text-ink-600"
-              title={DOMAIN_MAP[entry.domain].name}
+              title={getDomain(certId ?? '', entry.domain)?.name}
             >
               {entry.domain}: {entry.picked}
               {entry.picked !== entry.target && (
@@ -227,10 +232,10 @@ export function MockExamPanel({
   );
 }
 
-function DomainResultBar({ result }: { result: MockExamDomainResult }) {
+function DomainResultBar({ certId, result }: { certId: string | undefined; result: MockExamDomainResult }) {
   const { t } = useLocale();
   const percentage = result.total > 0 ? Math.round((result.correct / result.total) * 100) : 0;
-  const domain = DOMAIN_MAP[result.domain];
+  const domain = getDomain(certId ?? '', result.domain);
   const percentageColorClassName =
     percentage >= 80 ? 'text-ok-600' : percentage >= 70 ? 'text-accent-600' : 'text-ko-600';
 
@@ -252,9 +257,18 @@ function DomainResultBar({ result }: { result: MockExamDomainResult }) {
 export function MockExamFinishBar({ onFinish, onExit }: { onFinish: () => void; onExit: () => void }) {
   const { t } = useLocale();
 
+  // Same reasoning as Pagination: this button sits at the bottom of a long
+  // question list, so without this you'd finish the exam and land on the
+  // results panel already scrolled to the bottom, having to scroll back up
+  // to see your score.
+  function handleFinish() {
+    onFinish();
+    window.scrollTo({ top: 0 });
+  }
+
   return (
     <div className="mt-4 flex flex-wrap items-center justify-center gap-2 rounded-2xl border border-ink-100 bg-surface p-4 shadow-sm">
-      <Button onClick={onFinish}>{t('mockExam.finish')}</Button>
+      <Button onClick={handleFinish}>{t('mockExam.finish')}</Button>
       <Button variant="ghost" onClick={onExit}>
         {t('mockExam.exitWithoutSaving')}
       </Button>

@@ -5,8 +5,9 @@ import sql from 'highlight.js/lib/languages/sql';
 import python from 'highlight.js/lib/languages/python';
 import yaml from 'highlight.js/lib/languages/yaml';
 import bash from 'highlight.js/lib/languages/bash';
+import json from 'highlight.js/lib/languages/json';
 import 'highlight.js/styles/vs2015.css';
-import { DOMAIN_MAP } from '../data/domains';
+import { getDomain } from '../data/domains';
 import { Highlight } from '../../shared/components/Highlight';
 import { Button } from '../../shared/components/Button';
 import { shuffleIndices } from '../../shared/utils/shuffle';
@@ -16,11 +17,97 @@ import type { Question, QuestionProgress } from '../quiz.types';
 // Registered once at module load. Covers every language actually used by
 // the exam bank and by AI-generated questions (PySpark reads as python,
 // Databricks CLI/bash reads as bash, DAB config reads as yaml).
-hljs.registerLanguage('sql', sql);
+// Databricks/Delta-specific vocabulary the bundled ANSI-SQL grammar
+// doesn't recognize as keywords, so it'd otherwise render as plain
+// uncolored text even though it's central to this exam bank's content.
+const DATABRICKS_SQL_KEYWORDS = [
+  'vacuum',
+  'optimize',
+  'restore',
+  'zorder',
+  'clone',
+  'pivot',
+  'unpivot',
+  'deny',
+  'streaming',
+  'tblproperties',
+  'expect',
+  'expectation',
+  'location',
+  'comment',
+  'refresh',
+  'live',
+  'materialized',
+  'catalog',
+  'metastore',
+  'workspace',
+  'cluster',
+  'warehouse',
+  'pipeline',
+  'lakehouse',
+  'delta',
+  'json',
+  'csv',
+  'binaryfile',
+  'cloudfiles',
+  'readstream',
+  'writestream',
+  'checkpoint',
+  'shallow',
+  'deep',
+  'recipient',
+  'share',
+  'privileges',
+  'usage',
+  'ownership',
+  'tag',
+  'volume',
+  'schema',
+  'widget',
+  'notebook',
+  'dashboard',
+  'alert',
+  'endpoint',
+  'serverless',
+  'photon',
+  'autoloader',
+  'cron',
+  'cascade',
+  'struct',
+];
+hljs.registerLanguage('sql', (hljsInstance) => {
+  const definition = sql(hljsInstance);
+  // The bundled grammar's double-quoted-text mode has no `scope`, so it
+  // renders completely unstyled -- strictly correct per ANSI SQL (double
+  // quotes there are identifiers, not string literals), but Databricks
+  // SQL commonly accepts double quotes for string literals too, and a lot
+  // of this bank's own questions use them that way. Left unpatched,
+  // otherwise-identical code renders with visibly inconsistent coloring
+  // purely based on which quote character the author happened to use.
+  // Give it the same "string" scope as the single-quote mode so both
+  // render identically.
+  const doubleQuoteMode = definition.contains?.find(
+    (mode): mode is typeof mode & { begin: RegExp } =>
+      mode.begin instanceof RegExp && mode.begin.source === '"' && !mode.scope && !mode.className,
+  );
+  if (doubleQuoteMode) doubleQuoteMode.scope = 'string';
+
+  const { keywords } = definition;
+  if (
+    keywords &&
+    typeof keywords === 'object' &&
+    !Array.isArray(keywords) &&
+    Array.isArray(keywords.keyword)
+  ) {
+    keywords.keyword.push(...DATABRICKS_SQL_KEYWORDS);
+  }
+  return definition;
+});
 hljs.registerLanguage('python', python);
 hljs.registerLanguage('yaml', yaml);
 hljs.registerLanguage('bash', bash);
-const CODE_LANGUAGE_SUBSET = ['sql', 'python', 'yaml', 'bash'];
+hljs.registerLanguage('json', json);
+const CODE_LANGUAGE_SUBSET = ['sql', 'python', 'yaml', 'bash', 'json'];
 
 // hljs.highlightAuto guesses purely from grammar-token overlap, which is
 // unreliable on short snippets: single-line CLI commands like
@@ -54,6 +141,52 @@ const CLI_BINARIES = new Set([
 const YAML_LINE = /^\s*(-\s+)?[\w.${}-]+:(\s|$)/;
 const PYTHON_HINTS = /^\s*(import |from \S+ import |def |@\w|spark\.|dbutils\.)/m;
 const PYSPARK_CHAIN = /\.option\(|\.readStream|\.writeStream/;
+// Every SQL statement keyword actually used to *open* a snippet across
+// this exam bank. Checked against the first word rather than searched for
+// anywhere in the content (unlike SQL_HINTS below) because that's cheap,
+// unambiguous, and covers commands like SHOW/DESCRIBE/DROP/USE/SET/VACUUM
+// that don't otherwise contain any of SQL_HINTS's substrings -- those
+// used to fall through to highlightAuto, which often guesses 'sql'
+// correctly but with relevance too low to pass the confidence floor
+// below, rendering as plain unstyled text instead.
+const SQL_STATEMENT_STARTS = new Set([
+  'select',
+  'create',
+  'alter',
+  'drop',
+  'show',
+  'describe',
+  'desc',
+  'grant',
+  'revoke',
+  'deny',
+  'insert',
+  'update',
+  'delete',
+  'merge',
+  'copy',
+  'use',
+  'set',
+  'vacuum',
+  'optimize',
+  'restore',
+  'comment',
+  'with',
+  'explain',
+  'truncate',
+  'refresh',
+  'call',
+  'declare',
+  'analyze',
+  'msck',
+  'cache',
+  'uncache',
+  'reset',
+  'add',
+  'apply',
+  'pivot',
+  'unpivot',
+]);
 const SQL_HINTS =
   /\b(SELECT|CREATE\s+(OR\s+REPLACE\s+)?(TABLE|STREAMING TABLE|VIEW)|ALTER\s+TABLE|GRANT|REVOKE|INSERT\s+INTO|COPY\s+INTO|MERGE\s+INTO|FROM\s+\w|WHERE\s)\b/i;
 
@@ -72,6 +205,20 @@ function detectLanguage(content: string): string | null {
     .split(/\s+/)[0]
     .replace(/^[$#>]\s*/, '');
   if (CLI_BINARIES.has(firstWord)) return 'bash';
+  if (SQL_STATEMENT_STARTS.has(firstWord.toLowerCase())) return 'sql';
+
+  const firstChar = trimmed[0];
+  const lastChar = trimmed[trimmed.length - 1];
+  if ((firstChar === '{' && lastChar === '}') || (firstChar === '[' && lastChar === ']')) {
+    try {
+      JSON.parse(trimmed);
+      return 'json';
+    } catch {
+      // Looks JSON-shaped but doesn't actually parse (e.g. a Python dict
+      // literal with single quotes) -- fall through to the other checks
+      // instead of forcing json highlighting on it.
+    }
+  }
 
   const yamlLikeCount = lines.filter((l) => YAML_LINE.test(l)).length;
   if (yamlLikeCount / lines.length >= 0.6 && !trimmed.includes(';')) return 'yaml';
@@ -114,7 +261,7 @@ export function QuestionCard({
 }: QuestionCardProps) {
   const [selected, setSelected] = useState<number[]>([]);
   const { t } = useLocale();
-  const domain = DOMAIN_MAP[question.d];
+  const domain = getDomain(question.certId, question.d);
   const isMulti = question.m === 1;
   const isAnswered = Boolean(entry);
 
@@ -160,7 +307,13 @@ export function QuestionCard({
     >
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <span className="max-w-full break-words rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-700">
-          S{domain.order} · {domain.name}
+          {domain ? (
+            <>
+              S{domain.order} · {domain.name}
+            </>
+          ) : (
+            question.d
+          )}
         </span>
         {question.exam > 0 && (
           <span className="rounded-full bg-ink-50 px-2.5 py-1 text-xs font-medium text-ink-500">
@@ -428,22 +581,90 @@ function highlightContent(content: string): HighlightResult {
   }
 }
 
+/** hljs's output is a flat run of `<span class="...">...</span>` tags (it
+ * never emits anything else -- no self-closing tags, no other elements),
+ * so splitting it into one HTML string per source line is a matter of
+ * tracking which spans are still open at each `\n`: close them all before
+ * the break, and reopen the same tags right after it. Naive splitting on
+ * `\n` would otherwise leave a span opened on one line and closed on a
+ * later one, corrupting every line in between once rendered separately
+ * (each line needs to be independently valid HTML, since line numbers
+ * render one line per row). */
+function splitHighlightedHtmlByLine(html: string): string[] {
+  const lines: string[] = [];
+  const openTags: string[] = [];
+  let current = '';
+  let i = 0;
+
+  while (i < html.length) {
+    const char = html[i];
+    if (char === '<') {
+      const tagEnd = html.indexOf('>', i);
+      if (tagEnd === -1) {
+        current += html.slice(i);
+        break;
+      }
+      const tag = html.slice(i, tagEnd + 1);
+      if (tag.startsWith('</')) {
+        openTags.pop();
+      } else {
+        openTags.push(tag);
+      }
+      current += tag;
+      i = tagEnd + 1;
+    } else if (char === '\n') {
+      current += '</span>'.repeat(openTags.length);
+      lines.push(current);
+      current = openTags.join('');
+      i += 1;
+    } else {
+      current += char;
+      i += 1;
+    }
+  }
+  current += '</span>'.repeat(openTags.length);
+  lines.push(current);
+  return lines;
+}
+
 function CodeBlock({ content }: { content: string }) {
   const { html, language } = useMemo(() => highlightContent(content), [content]);
+  const lines = useMemo(() => splitHighlightedHtmlByLine(html), [html]);
+  // ch is the width of one monospace digit; sized to the widest line
+  // number so e.g. a 12-line block doesn't get a gutter wide enough for 3
+  // digits.
+  const gutterWidth = `${String(lines.length).length + 1}ch`;
 
   return (
-    <pre className="my-2 overflow-x-hidden rounded-lg text-[13px] leading-relaxed sm:text-xs">
-      {/* whitespace-pre-wrap keeps the source's own line breaks/indentation
-       * (like plain "pre") while still wrapping at the container edge --
-       * break-words forces a mid-token break for the rare line with no
-       * natural wrap point (a long unbroken string/URL), so nothing ever
-       * needs horizontal scroll to read, on any screen size. */}
-      {/* hljs escapes the source itself; this only ever renders its own highlighted-span markup, never raw user HTML */}
-      <code
-        className={`hljs block whitespace-pre-wrap break-words rounded-lg px-3 py-2.5 font-mono ${language ? `language-${language}` : ''}`}
-        dangerouslySetInnerHTML={{ __html: html }}
-      />
-    </pre>
+    <div className="my-2 overflow-hidden rounded-lg border border-black/40 bg-[#1e1e1e]">
+      <pre className="overflow-x-hidden text-[13px] leading-relaxed sm:text-xs">
+        {/* hljs escapes the source itself; this only ever renders its own highlighted-span markup, never raw user HTML */}
+        <code className={`hljs block font-mono ${language ? `language-${language}` : ''}`}>
+          {lines.map((lineHtml, index) => (
+            <div key={index} className="flex">
+              <span
+                className="select-none pr-3 text-right text-white/25"
+                style={{ minWidth: gutterWidth }}
+                aria-hidden="true"
+              >
+                {index + 1}
+              </span>
+              {/* min-w-0 lets this shrink below its content's natural width
+               * inside the flex row, which is what actually lets
+               * whitespace-pre-wrap/break-words wrap long lines instead of
+               * pushing the row wider than the card -- without it, a flex
+               * item's default min-width:auto overrides the wrap entirely. */}
+              <span
+                className="min-w-0 flex-1 whitespace-pre-wrap break-words"
+                // Always render at least a space so an empty source line
+                // still occupies a row instead of collapsing to 0 height.
+                dangerouslySetInnerHTML={{ __html: lineHtml || ' ' }}
+              />
+            </div>
+          ))}
+        </code>
+      </pre>
+    </div>
   );
 }
 

@@ -1,8 +1,8 @@
 import { DOMAINS } from '../data/domains';
 import { shuffleArray } from '../../shared/utils/shuffle';
-import type { DomainId, ProgressMap, Question } from '../quiz.types';
+import type { DomainId, ProgressMap, Question, RawDomain } from '../quiz.types';
 
-export type MockExamSource = 'unanswered' | 'answered' | 'both';
+export type MockExamSource = 'unanswered' | 'answered' | 'wrong' | 'both';
 
 export interface MockExamOptions {
   /** Total number of questions the generated exam should have. */
@@ -53,20 +53,20 @@ export function computeMockExamDomainResults(
     byDomain.set(question.d, stats);
   }
 
-  // Ordered by each domain's official position. DOMAINS aggregates every
-  // loaded certification (each domain stamped with its own certId), but a
-  // domain only ends up in `byDomain` if one of its questions was actually
-  // in this exam -- which, since the exam is generated from a single
-  // cert's bank, means cross-cert entries are naturally excluded without
-  // needing a certId here. The `seen` guard is just a defensive backstop
-  // against the documented (if currently untrue) risk of two certs
-  // reusing the same domain code -- see the note on DOMAIN_MAP.
-  const seen = new Set<DomainId>();
+  // Ordered by each domain's official position within its own
+  // certification. `byDomain` itself is built purely from the exam's own
+  // questions above, so its stats are never ambiguous even when two certs
+  // share a domain code (e.g. both Databricks DEA and DP-700 have an
+  // "ING") -- but without scoping this loop to the same cert, the
+  // *display order* of collision codes could still be borrowed from
+  // whichever cert's same-named domain happens to appear first in the
+  // global list.
+  const certId = questions[0]?.certId;
   const results: MockExamDomainResult[] = [];
   for (const domain of DOMAINS) {
+    if (domain.certId !== certId) continue;
     const stats = byDomain.get(domain.id);
-    if (!stats || seen.has(domain.id)) continue;
-    seen.add(domain.id);
+    if (!stats) continue;
     results.push({ domain: domain.id, ...stats });
   }
   return results;
@@ -75,8 +75,8 @@ export function computeMockExamDomainResults(
 /** Splits `total` into one integer count per domain, proportional to each
  * domain's official exam weight, using the largest-remainder method so the
  * counts always add up to exactly `total` (plain rounding can over/undershoot). */
-function allocateByWeight(total: number): Record<DomainId, number> {
-  const raw = DOMAINS.map((domain) => ({
+function allocateByWeight(total: number, domains: RawDomain[]): Record<DomainId, number> {
+  const raw = domains.map((domain) => ({
     id: domain.id,
     exact: (domain.weight / 100) * total,
   }));
@@ -101,16 +101,17 @@ function allocateByWeight(total: number): Record<DomainId, number> {
 }
 
 function matchesSource(question: Question, progress: ProgressMap, source: MockExamSource): boolean {
-  const isAnswered = Boolean(progress[question.id]);
+  const entry = progress[question.id];
   if (source === 'both') return true;
-  if (source === 'answered') return isAnswered;
-  return !isAnswered; // 'unanswered'
+  if (source === 'answered') return Boolean(entry);
+  if (source === 'wrong') return Boolean(entry) && !entry.ok;
+  return !entry; // 'unanswered'
 }
 
 /** Generates a mock exam: a set of questions mixed from the whole bank,
  * sampled per domain in proportion to the official exam weights (e.g. ~22%
  * from Data Transformation, ~6% from Platform), restricted to answered,
- * unanswered, or either question, per `options.source`.
+ * unanswered, previously-wrong, or any question, per `options.source`.
  *
  * If a domain doesn't have enough eligible questions to fill its share
  * (e.g. you've already answered everything in a small domain and asked for
@@ -122,20 +123,36 @@ export function generateMockExam(
   progress: ProgressMap,
   options: MockExamOptions,
 ): MockExamResult {
+  // `bank` is always single-certification (see useQuestionBank), so every
+  // question in it shares the same certId -- safe to read off the first
+  // one. Scoping to just this cert's domains matters once more than one
+  // certification is loaded: the global DOMAINS list mixes every cert's
+  // domains together, some of which reuse the same short code with a
+  // completely different weight (e.g. DEA's "ING" is 21%, DP-700's "ING"
+  // is 33%) -- allocating against the unfiltered list would let whichever
+  // cert's same-named domain happened to load last silently override the
+  // actual exam's real weight.
+  const certId = bank[0]?.certId;
+  const certDomains = DOMAINS.filter((domain) => domain.certId === certId);
+
   const total = Math.max(0, Math.min(options.totalQuestions, bank.length));
-  const targets = allocateByWeight(total);
+  const targets = allocateByWeight(total, certDomains);
 
   const eligibleByDomain = new Map<DomainId, Question[]>(
-    DOMAINS.map((domain) => [
+    certDomains.map((domain) => [
       domain.id,
-      shuffleArray(bank.filter((q) => q.d === domain.id && matchesSource(q, progress, options.source))),
+      shuffleArray(
+        bank.filter(
+          (q) => q.certId === certId && q.d === domain.id && matchesSource(q, progress, options.source),
+        ),
+      ),
     ]),
   );
 
   const picked: Question[] = [];
   const pickedCountByDomain = {} as Record<DomainId, number>;
 
-  for (const domain of DOMAINS) {
+  for (const domain of certDomains) {
     const pool = eligibleByDomain.get(domain.id) ?? [];
     const take = pool.splice(0, targets[domain.id]);
     picked.push(...take);
@@ -147,7 +164,7 @@ export function generateMockExam(
   // overall bank could still provide.
   const shortfall = total - picked.length;
   if (shortfall > 0) {
-    const leftovers = shuffleArray(DOMAINS.flatMap((d) => eligibleByDomain.get(d.id) ?? []));
+    const leftovers = shuffleArray(certDomains.flatMap((d) => eligibleByDomain.get(d.id) ?? []));
     const backfill = leftovers.slice(0, shortfall);
     backfill.forEach((q) => {
       pickedCountByDomain[q.d] += 1;
@@ -155,7 +172,7 @@ export function generateMockExam(
     picked.push(...backfill);
   }
 
-  const breakdown: MockExamDomainBreakdown[] = DOMAINS.map((domain) => ({
+  const breakdown: MockExamDomainBreakdown[] = certDomains.map((domain) => ({
     domain: domain.id,
     target: targets[domain.id],
     picked: pickedCountByDomain[domain.id] ?? 0,

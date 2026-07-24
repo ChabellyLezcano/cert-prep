@@ -1,6 +1,6 @@
 import { useRef, type ReactNode } from 'react';
 import { Header } from '@/shared/components/Header';
-import { useElementHeight } from '@/shared/hooks/useElementHeight';
+import { useElementHeight } from '@/shared/hooks/useElementHeights';
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const headerRef = useRef<HTMLElement>(null);

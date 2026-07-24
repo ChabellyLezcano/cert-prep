@@ -213,10 +213,77 @@ describe('QuestionCard', () => {
       );
       const codeEl = document.querySelector('code.hljs');
       const preEl = codeEl?.closest('pre');
-      expect(codeEl).toHaveClass('whitespace-pre-wrap');
-      expect(codeEl).toHaveClass('break-words');
-      expect(codeEl?.className).not.toMatch(/\bw-max\b/);
+      // Wrapping lives on each line's content span (the second child of
+      // each line row: line-number gutter, then content) since line
+      // numbers need every source line to be its own row.
+      const lineContent = codeEl?.querySelector('div > span:last-child');
+      expect(lineContent).toHaveClass('whitespace-pre-wrap');
+      expect(lineContent).toHaveClass('break-words');
+      expect(lineContent?.className).not.toMatch(/\bw-max\b/);
       expect(preEl?.className).not.toMatch(/overflow-x-auto/);
+    });
+
+    it('renders one line-numbered row per source line', () => {
+      render(
+        <QuestionCard
+          question={questionWithCode('SELECT 1;\nSELECT 2;\nSELECT 3;')}
+          entry={undefined}
+          searchTerm=""
+          onGrade={vi.fn()}
+          onReveal={vi.fn()}
+          onRetry={vi.fn()}
+        />,
+      );
+      const codeEl = document.querySelector('code.hljs');
+      const lineNumbers = Array.from(codeEl?.querySelectorAll('div > span:first-child') ?? []).map(
+        (el) => el.textContent,
+      );
+      expect(lineNumbers).toEqual(['1', '2', '3']);
+    });
+
+    it('colors double-quoted strings the same as single-quoted ones', () => {
+      render(
+        <QuestionCard
+          question={questionWithCode(
+            'SELECT CASE WHEN is_account_group_member("doctors") THEN diagnosis ELSE \'CONFIDENTIAL\' END',
+          )}
+          entry={undefined}
+          searchTerm=""
+          onGrade={vi.fn()}
+          onReveal={vi.fn()}
+          onRetry={vi.fn()}
+        />,
+      );
+      const codeEl = document.querySelector('code.hljs');
+      const strings = codeEl?.querySelectorAll('.hljs-string');
+      // Both the double-quoted "doctors" and single-quoted 'CONFIDENTIAL'
+      // should get the same hljs-string treatment -- the bundled grammar
+      // leaves double-quoted text completely unstyled by default (ANSI SQL
+      // treats it as an identifier, not a string), which is the exact
+      // inconsistency this patch fixes.
+      expect(strings).toHaveLength(2);
+      expect(strings?.[0].textContent).toContain('doctors');
+      expect(strings?.[1].textContent).toContain('CONFIDENTIAL');
+    });
+
+    it('recognizes Databricks/Delta-specific SQL keywords the base grammar misses', () => {
+      render(
+        <QuestionCard
+          question={questionWithCode(
+            'OPTIMIZE sales ZORDER BY (customer_id);\nVACUUM sales RETAIN 168 HOURS;',
+          )}
+          entry={undefined}
+          searchTerm=""
+          onGrade={vi.fn()}
+          onReveal={vi.fn()}
+          onRetry={vi.fn()}
+        />,
+      );
+      const codeEl = document.querySelector('code.hljs');
+      const keywordTexts = Array.from(codeEl?.querySelectorAll('.hljs-keyword') ?? []).map((el) =>
+        el.textContent?.toLowerCase(),
+      );
+      expect(keywordTexts).toEqual(expect.arrayContaining(['optimize', 'zorder', 'vacuum']));
     });
   });
 

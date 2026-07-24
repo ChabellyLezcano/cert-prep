@@ -36,6 +36,13 @@ export const CERTIFICATIONS: readonly CertificationMeta[] = [
     provider: 'AWS',
     examGuideVersion: 'SAA-C03',
   },
+  {
+    id: 'dbt-analytics-engineer',
+    name: 'Analytics Engineering Certification',
+    acronym: 'dbt',
+    provider: 'dbt Labs',
+    examGuideVersion: 'v1.7',
+  },
 ];
 
 /** Convenience constant for the certification currently loaded end-to-end. */
