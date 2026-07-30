@@ -66,6 +66,7 @@ async function main() {
     options_en: q.o,
     correct_answers: q.a,
     explanation_es: q.x,
+    image_url: q.image ?? null,
   }));
 
   for (const batch of chunk(questionRows, CHUNK_SIZE)) {

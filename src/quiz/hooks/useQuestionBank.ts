@@ -24,6 +24,7 @@ type RawRow = {
   correct_answers: number[];
   explanation_en: string | null;
   explanation_es: string;
+  image_url: string | null;
 };
 
 /** Loads the shared question bank from the `questions` table. Unlike
@@ -100,6 +101,9 @@ export function useQuestionBank(certId?: string): UseQuestionBankResult {
           es: (row.options_es as string[] | null) ?? undefined,
         };
         const xByLocale = { en: row.explanation_en ?? undefined, es: row.explanation_es };
+        const image = row.image_url
+          ? supabase.storage.from('question-images').getPublicUrl(row.image_url).data.publicUrl
+          : undefined;
 
         return {
           id: row.id,
@@ -112,6 +116,7 @@ export function useQuestionBank(certId?: string): UseQuestionBankResult {
           o: resolveLocaleField(oByLocale, questionLocale),
           a: row.correct_answers,
           x: resolveLocaleField(xByLocale, explanationLocale),
+          image,
           qByLocale,
           oByLocale,
           xByLocale,

@@ -207,6 +207,7 @@ export type Database = {
           explanation_en: string | null;
           explanation_es: string;
           id: string;
+          image_url: string | null;
           is_multi: boolean;
           n: number;
           options_en: Json;
@@ -224,6 +225,7 @@ export type Database = {
           explanation_en?: string | null;
           explanation_es: string;
           id: string;
+          image_url?: string | null;
           is_multi?: boolean;
           n: number;
           options_en: Json;
@@ -241,6 +243,7 @@ export type Database = {
           explanation_en?: string | null;
           explanation_es?: string;
           id?: string;
+          image_url?: string | null;
           is_multi?: boolean;
           n?: number;
           options_en?: Json;

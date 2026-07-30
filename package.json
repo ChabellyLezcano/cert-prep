@@ -18,6 +18,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "db:seed": "vite-node scripts/seed.ts",
+    "upload-question-images": "vite-node scripts/upload-question-images.ts",
     "translate-questions": "vite-node scripts/translate-questions.ts",
     "db:migrate": "npx supabase@latest db push",
     "db:migrate:new": "supabase migration new",

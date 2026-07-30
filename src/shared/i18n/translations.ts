@@ -90,6 +90,7 @@ export const en = {
   'question.retry': 'Retry',
   'question.explanationLabel': 'Explanation',
   'question.examQ': 'Exam {exam} · Q{n}',
+  'question.exhibitAlt': 'Question exhibit',
 
   // Mock exam
   'mockExam.source.unanswered': 'Unanswered',
@@ -269,6 +270,7 @@ export const es: Record<TranslationKey, string> = {
   'question.retry': 'Reintentar',
   'question.explanationLabel': 'Explicación',
   'question.examQ': 'Examen {exam} · P{n}',
+  'question.exhibitAlt': 'Imagen de la pregunta',
 
   // Mock exam
   'mockExam.source.unanswered': 'Sin responder',
