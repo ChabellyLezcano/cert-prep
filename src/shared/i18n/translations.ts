@@ -27,6 +27,10 @@ export const en = {
   'certifications.subtitle': 'Pick a certification to start studying.',
   'certifications.examGuide': 'Exam guide: {version}',
   'certifications.startStudying': 'Start studying',
+  'certifications.searchPlaceholder': 'Search certifications...',
+  'certifications.filterByProvider': 'Filter by provider',
+  'certifications.allProviders': 'All',
+  'certifications.noResults': 'No certifications match your search.',
 
   // Loading states
   'loading.certifications': 'Loading certifications...',
@@ -202,6 +206,10 @@ export const es: Record<TranslationKey, string> = {
   'certifications.subtitle': 'Elige una certificación para empezar a estudiar.',
   'certifications.examGuide': 'Guía del examen: {version}',
   'certifications.startStudying': 'Empezar a estudiar',
+  'certifications.searchPlaceholder': 'Buscar certificaciones...',
+  'certifications.filterByProvider': 'Filtrar por proveedor',
+  'certifications.allProviders': 'Todas',
+  'certifications.noResults': 'Ninguna certificación coincide con tu búsqueda.',
 
   // Loading states
   'loading.certifications': 'Cargando certificaciones...',

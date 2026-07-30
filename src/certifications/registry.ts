@@ -19,6 +19,13 @@ export interface CertificationMeta {
   acronym: string;
   provider: string;
   examGuideVersion?: string;
+  /** Path to a logo/badge image under /public, e.g. "/certifications/databricks-dea.svg".
+   * Optional and intentionally NOT bundled with real vendor artwork -- official
+   * certification badges are trademarked, so this repo ships no logo files.
+   * Drop your own (Microsoft/Databricks/AWS/dbt Labs let certified holders use
+   * the official digital badge for personal use) at this path and it renders
+   * automatically; otherwise CertificationBadge falls back to an acronym chip. */
+  logoUrl?: string;
 }
 
 export const CERTIFICATIONS: readonly CertificationMeta[] = [
@@ -28,6 +35,7 @@ export const CERTIFICATIONS: readonly CertificationMeta[] = [
     acronym: 'DEA',
     provider: 'Databricks',
     examGuideVersion: '2026-05-04',
+    logoUrl: '/certifications/databricks-dea.svg',
   },
   {
     id: 'aws-saa',
@@ -35,6 +43,7 @@ export const CERTIFICATIONS: readonly CertificationMeta[] = [
     acronym: 'SAA',
     provider: 'AWS',
     examGuideVersion: 'SAA-C03',
+    logoUrl: '/certifications/aws-saa.svg',
   },
   {
     id: 'dbt-analytics-engineer',
@@ -42,8 +51,22 @@ export const CERTIFICATIONS: readonly CertificationMeta[] = [
     acronym: 'dbt',
     provider: 'dbt Labs',
     examGuideVersion: 'v1.7',
+    logoUrl: '/certifications/dbt-analytics-engineer.svg',
+  },
+  {
+    id: 'microsoft-pl-300',
+    name: 'Power BI Data Analyst Associate',
+    acronym: 'PL-300',
+    provider: 'Microsoft',
+    examGuideVersion: '2026-04-20',
+    logoUrl: '/certifications/microsoft-pl-300.svg',
   },
 ];
+
+/** Every distinct provider across the registry, in first-seen order --
+ * drives the provider filter/grouping on the certifications page without
+ * hardcoding the list separately from CERTIFICATIONS itself. */
+export const PROVIDERS: readonly string[] = [...new Set(CERTIFICATIONS.map((c) => c.provider))];
 
 /** Convenience constant for the certification currently loaded end-to-end. */
 export const DATABRICKS_DEA_CERT_ID = 'databricks-dea';
