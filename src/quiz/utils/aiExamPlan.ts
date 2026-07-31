@@ -1,5 +1,7 @@
 import type { Domain, DomainId } from '@/quiz/quiz.types';
 
+export const AI_EXAM_QUESTION_COUNT = 10;
+
 /** Mirrors MAX_COUNT in supabase/functions/generate-ai-questions/index.ts.
  * Keep these two in sync if that edge function's per-call cap ever
  * changes -- a batch above this would just be silently clamped server

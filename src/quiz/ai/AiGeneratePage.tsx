@@ -13,6 +13,7 @@ import { toDisplayQuestion, AiBadge } from '@/quiz/ai/aiDisplay';
 import { useLocale } from '@/shared/i18n/useLocale';
 import type { AiGeneratedQuestion } from '@/quiz/ai/aiQuestions.types';
 import type { DomainId, ProgressMap, Question } from '@/quiz/quiz.types';
+import { AI_EXAM_QUESTION_COUNT } from '@/quiz/utils/aiExamPlan';
 
 const COUNT_PRESETS = [3, 5, 10];
 type GenerateMode = 'topic' | 'exam';
