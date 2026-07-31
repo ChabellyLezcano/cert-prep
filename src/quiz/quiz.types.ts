@@ -21,6 +21,7 @@ export interface RawQuestion {
   a: number[];
   /** Explanation (Spanish) */
   x: string;
+  image?: string;
 }
 
 /** A question enriched with its exam number and a stable global id.

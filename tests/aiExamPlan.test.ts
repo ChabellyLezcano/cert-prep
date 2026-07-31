@@ -52,12 +52,13 @@ describe('planAiExamBatches', () => {
   });
 
   it('splits a single loaded domain into multiple capped batches that still sum to the total', () => {
-    const batches = planAiExamBatches(SINGLE_DOMAIN, AI_EXAM_QUESTION_COUNT);
+    const batchMax = 3; // fuerza el split real, ya que 10 total con cap 10 daría 1 sola batch
+    const batches = planAiExamBatches(SINGLE_DOMAIN, AI_EXAM_QUESTION_COUNT, batchMax);
     expect(batches.every((b) => b.domain === 'SEC')).toBe(true);
-    expect(batches.every((b) => b.count <= AI_EXAM_BATCH_MAX)).toBe(true);
+    expect(batches.every((b) => b.count <= batchMax)).toBe(true);
     expect(batches.reduce((sum, b) => sum + b.count, 0)).toBe(AI_EXAM_QUESTION_COUNT);
-    // 45 split into batches of at most 10 needs at least 5 batches.
-    expect(batches.length).toBeGreaterThanOrEqual(5);
+    // 10 split into batches of at most 3 needs at least 4 batches.
+    expect(batches.length).toBeGreaterThanOrEqual(4);
   });
 
   it('returns an empty plan for zero domains or a non-positive total', () => {
