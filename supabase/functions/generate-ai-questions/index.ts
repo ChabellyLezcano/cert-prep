@@ -84,7 +84,8 @@ Deno.serve(async (req) => {
         .eq('domain', domain)
         .order('topic_order'),
       // Prioritize examples that already contain a code/config snippet
-      // (marked with backticks in the bank), so the few-shot sample
+      // (marked with the lang*...*lang tags in the bank -- see
+      // TAG_LANGUAGE in QuestionCard.tsx), so the few-shot sample
       // actually demonstrates the code-heavy question style we want
       // the model to imitate -- a plain `.limit(3)` with no filter
       // frequently returned zero code examples by luck of ordering.
@@ -99,7 +100,9 @@ Deno.serve(async (req) => {
         )
         .eq('cert_id', certId)
         .eq('domain', domain)
-        .or('question_en.ilike.%`%,question_es.ilike.%`%')
+        .or(
+          'question_en.ilike.%*sql%,question_en.ilike.%*python%,question_en.ilike.%*spark%,question_en.ilike.%*yaml%,question_en.ilike.%*bash%,question_en.ilike.%*json%,question_en.ilike.%*code%,question_es.ilike.%*sql%,question_es.ilike.%*python%,question_es.ilike.%*spark%,question_es.ilike.%*yaml%,question_es.ilike.%*bash%,question_es.ilike.%*json%,question_es.ilike.%*code%',
+        )
         .limit(3),
       supabase
         .from('questions')
@@ -258,7 +261,10 @@ REAL EXAM STYLE -- generate exactly ${count} NEW multiple-choice questions that 
 
 2. **Code is the norm here, not the exception.** At least ${Math.max(1, Math.ceil(count * 0.6))} of the ${count} questions should center on a real code/config/CLI snippet -- either embedded in the stem (e.g. "...runs the following query:" followed by a snippet, then the actual question), or as the answer options themselves (four candidate code blocks, only one correct). Use realistic PySpark, SQL, YAML, or CLI syntax matching what's in the study notes -- real table/column/variable names, not "foo"/"bar" placeholders. Only skip code for topics where the notes are purely conceptual (e.g. architecture, governance policy) -- don't force it there.
 
-3. **Wrap every code/config snippet in triple backticks** inside the JSON string, using literal "\\n" for line breaks -- e.g. "o": ["\`\`\`\\nCREATE FUNCTION f(x INT)\\nRETURNS INT\\nRETURN x + 1;\\n\`\`\`", "plain text option", ...]. Never fence plain prose. Short inline references (a column name, a CLI flag) can use single backticks instead of a full fenced block.
+3. **Wrap every code/config snippet in a \`lang*...*lang\` tag** inside the JSON string, using literal "\\n" for line breaks -- lang is one of sql, python, spark (PySpark specifically), yaml, bash, json, or code (for anything else -- file paths, config keys, generic identifiers). Two forms:
+   - **Standalone statement, its own code box:** pad with a leading and trailing "\\n" inside the tag -- e.g. "o": ["sql*\\nCREATE FUNCTION f(x INT)\\nRETURNS INT\\nRETURN x + 1;\\n*sql", "plain text option", ...].
+   - **Short inline mention within a sentence:** no padding, tag hugs the content tightly -- e.g. "A column can be renamed with spark*withColumnRenamed()*spark before the join." A literal backtick may appear freely inside the content if needed (e.g. Databricks' own \`/path\` quoting syntax) -- it's just a character now, not a delimiter, so it never needs escaping.
+   Never fence plain prose, and never use backticks or triple-backtick fences -- this tag is the only code markup the app recognizes.
 
 4. **Distractors must be genuinely plausible**, not obviously wrong or eliminable by length/vagueness alone. Each wrong option should reflect a real, common mistake: a nearly-correct syntax variant, a related-but-wrong command/parameter, a plausible-sounding but incorrect behavior, or a common misconception from the notes. Someone who half-understands the concept should be able to talk themselves into a wrong answer.
 

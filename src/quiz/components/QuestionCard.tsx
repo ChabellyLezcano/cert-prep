@@ -140,7 +140,13 @@ const CLI_BINARIES = new Set([
 ]);
 const YAML_LINE = /^\s*(-\s+)?[\w.${}-]+:(\s|$)/;
 const PYTHON_HINTS = /^\s*(import |from \S+ import |def |@\w|spark\.|dbutils\.)/m;
-const PYSPARK_CHAIN = /\.option\(|\.readStream|\.writeStream/;
+// .option(/.readStream/.writeStream alone missed the far more common
+// DataFrame method-chain shape (var_df.union(...), df.dropDuplicates(),
+// employeesDf.withColumn(...)) -- caught here by variable-naming
+// convention (identifier ending in df/Df) rather than a hardcoded method
+// list, since MC distractor options intentionally use invented method
+// names (e.g. "unionByColumn") that a fixed list could never anticipate.
+const PYSPARK_CHAIN = /\.option\(|\.readStream|\.writeStream|\b\w*[Dd]f\.\w+\(|\bWindow\./;
 // Every SQL statement keyword actually used to *open* a snippet across
 // this exam bank. Checked against the first word rather than searched for
 // anywhere in the content (unlike SQL_HINTS below) because that's cheap,
@@ -186,15 +192,39 @@ const SQL_STATEMENT_STARTS = new Set([
   'apply',
   'pivot',
   'unpivot',
+  'auto',
+  'convert',
+  'rollback',
 ]);
 const SQL_HINTS =
   /\b(SELECT|CREATE\s+(OR\s+REPLACE\s+)?(TABLE|STREAMING TABLE|VIEW)|ALTER\s+TABLE|GRANT|REVOKE|INSERT\s+INTO|COPY\s+INTO|MERGE\s+INTO|FROM\s+\w|WHERE\s)\b/i;
+
+/** Maps an authored language tag to the hljs grammar used to highlight
+ * it. `spark` is an authoring-clarity alias for PySpark content -- it's
+ * still plain Python syntax, so it highlights with the `python` grammar
+ * (no separate `spark` hljs language exists). `code` is the explicit
+ * "no specific language" tag for short mentions that aren't really SQL/
+ * Python/YAML/Bash/JSON -- file paths, config keys, magic commands --
+ * and renders as plain monospace with no syntax coloring (`null`). */
+const TAG_LANGUAGE: Record<string, string | null> = {
+  sql: 'sql',
+  python: 'python',
+  spark: 'python',
+  yaml: 'yaml',
+  bash: 'bash',
+  json: 'json',
+  code: null,
+};
 
 /** Returns a forced language when a snippet matches a known, unambiguous
  * pattern from the exam bank; null lets the caller fall back to
  * highlightAuto (and from there, to plain unstyled text if that's also
  * low-confidence -- better to show correct-looking plain code than
- * confidently wrong colors). */
+ * confidently wrong colors). This heuristic pathway now only runs for
+ * content that hasn't been migrated to an explicit `lang*...*lang` tag
+ * (see TAG_LANGUAGE and splitLangTags below) -- kept as a fallback for
+ * resilience, e.g. an AI-generation call that slips back to the old
+ * ``` convention. */
 function detectLanguage(content: string): string | null {
   const trimmed = content.trim();
   const lines = trimmed.split('\n').filter((l) => l.trim().length > 0);
@@ -492,9 +522,18 @@ function splitCodeBlocks(text: string): { type: 'text' | 'code'; content: string
  * bank for short snippets (`spark.sql()`, `%sql`, table/file paths, config
  * keys) that appear inline in a sentence rather than as a standalone
  * block. Deliberately excludes newlines from the match so it can't
- * accidentally swallow an unrelated stray backtick several lines later. */
+ * accidentally swallow an unrelated stray backtick several lines later.
+ *
+ * A handful of questions need a *literal* backtick inside a span --
+ * Databricks SQL itself uses backticks to quote file paths, e.g.
+ * `` `SELECT * FROM json.\`/Volumes/...\`` `` -- so those are authored
+ * with the inner backtick escaped as \` rather than left bare. The regex
+ * treats \` as part of the content (not a span boundary), and the
+ * unescape step below turns it back into a plain backtick for display,
+ * so the rendered pill shows `SELECT * FROM json.`/Volumes/...`` as
+ * intended instead of splitting into stray fragments. */
 function splitInlineCode(text: string): { type: 'text' | 'inline-code'; content: string }[] {
-  const inlineRegex = /`([^`\n]+)`/g;
+  const inlineRegex = /`((?:\\`|[^`\n])+)`/g;
   const segments: { type: 'text' | 'inline-code'; content: string }[] = [];
   let lastIndex = 0;
   let match: RegExpExecArray | null;
@@ -503,7 +542,7 @@ function splitInlineCode(text: string): { type: 'text' | 'inline-code'; content:
     if (match.index > lastIndex) {
       segments.push({ type: 'text', content: text.slice(lastIndex, match.index) });
     }
-    segments.push({ type: 'inline-code', content: match[1] });
+    segments.push({ type: 'inline-code', content: match[1].replace(/\\`/g, '`') });
     lastIndex = inlineRegex.lastIndex;
   }
   if (lastIndex < text.length) {
@@ -557,11 +596,23 @@ interface HighlightResult {
   language: string | null;
 }
 
-/** Highlights a code snippet: tries the pattern heuristics first, then
- * highlightAuto above a relevance floor, then falls back to plain escaped
- * text. Kept outside the component (as a plain, non-hook function) so
+/** Highlights a code snippet. When `forcedLanguage` is provided (the new
+ * tag pathway already resolved it -- see TAG_LANGUAGE), it's used
+ * directly with no guessing; `null` means the explicit 'code' tag, i.e.
+ * intentionally no syntax coloring. When `forcedLanguage` is omitted
+ * (the legacy, untagged pathway), falls back to the pattern heuristics,
+ * then highlightAuto above a relevance floor, then plain escaped text.
+ * Kept outside the component (as a plain, non-hook function) so
  * useMemo's callback body stays trivial for the React Compiler. */
-function highlightContent(content: string): HighlightResult {
+function highlightContent(content: string, forcedLanguage?: string | null): HighlightResult {
+  if (forcedLanguage !== undefined) {
+    if (forcedLanguage === null) return { html: escapeHtml(content), language: null };
+    try {
+      return { html: hljs.highlight(content, { language: forcedLanguage }).value, language: forcedLanguage };
+    } catch {
+      return { html: escapeHtml(content), language: null };
+    }
+  }
   try {
     const forced = detectLanguage(content);
     if (forced) {
@@ -627,8 +678,11 @@ function splitHighlightedHtmlByLine(html: string): string[] {
   return lines;
 }
 
-function CodeBlock({ content }: { content: string }) {
-  const { html, language } = useMemo(() => highlightContent(content), [content]);
+function CodeBlock({ content, forcedLanguage }: { content: string; forcedLanguage?: string | null }) {
+  const { html, language } = useMemo(
+    () => highlightContent(content, forcedLanguage),
+    [content, forcedLanguage],
+  );
   const lines = useMemo(() => splitHighlightedHtmlByLine(html), [html]);
   // ch is the width of one monospace digit; sized to the widest line
   // number so e.g. a 12-line block doesn't get a gutter wide enough for 3
@@ -668,7 +722,7 @@ function CodeBlock({ content }: { content: string }) {
   );
 }
 
-function TextWithCode({ text, searchTerm }: { text: string; searchTerm: string }) {
+function LegacyTextWithCode({ text, searchTerm }: { text: string; searchTerm: string }) {
   const segments = useMemo(() => splitCodeBlocks(text), [text]);
 
   // Common case, zero fences and zero inline backticks: render exactly as
@@ -686,6 +740,78 @@ function TextWithCode({ text, searchTerm }: { text: string; searchTerm: string }
           <TextWithInlineCode key={index} text={segment.content} searchTerm={searchTerm} />
         ),
       )}
+    </>
+  );
+}
+
+/** Matches the authored `lang*content*lang` markup -- the mechanism that
+ * replaced ```fences``` and `single-backtick spans` bank-wide. `lang` is
+ * one of TAG_LANGUAGE's keys, and the SAME keyword must close the span
+ * (via the backreference) so a stray "sql*" elsewhere in the sentence
+ * can't accidentally pair with an unrelated "*python" later on.
+ * Lookaround boundaries keep it from matching inside a longer identifier
+ * (e.g. "mysql*foo*mysql" won't trigger on a bare "sql*"). No escaping
+ * is ever needed inside the content -- unlike backticks, which
+ * Databricks SQL itself uses to quote identifiers/paths, "lang*"/"*lang"
+ * essentially never occurs naturally inside real code. */
+const LANG_TAG = /(?<![a-zA-Z0-9_])(sql|python|spark|yaml|bash|json|code)\*([\s\S]*?)\*\1(?![a-zA-Z0-9_])/g;
+
+function splitLangTags(
+  text: string,
+): { type: 'text' | 'lang-tag'; content: string; language?: string | null }[] {
+  const segments: { type: 'text' | 'lang-tag'; content: string; language?: string | null }[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  LANG_TAG.lastIndex = 0;
+  while ((match = LANG_TAG.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      segments.push({ type: 'text', content: text.slice(lastIndex, match.index) });
+    }
+    segments.push({ type: 'lang-tag', content: match[2], language: TAG_LANGUAGE[match[1]] });
+    lastIndex = LANG_TAG.lastIndex;
+  }
+  if (lastIndex < text.length) {
+    segments.push({ type: 'text', content: text.slice(lastIndex) });
+  }
+  return segments;
+}
+
+/** Renders question/option/explanation text, resolving the authored
+ * `lang*...*lang` tags (see splitLangTags) and falling back to the
+ * legacy ```/` markup for anything not yet migrated -- e.g. an
+ * AI-generation call that slips back to the old convention despite the
+ * updated prompt. A tag's content signals block-vs-inline exactly the
+ * way ``` vs ` used to: content padded with a leading/trailing newline
+ * (`sql*\nGRANT ...\n*sql`) is a standalone statement worth its own
+ * boxed, line-numbered code block even if it's a single physical line;
+ * content with no such padding (`sql*GRANT ...*sql`, no `\n` at all)
+ * is a short inline mention rendered as a small monospace pill. */
+function TextWithCode({ text, searchTerm }: { text: string; searchTerm: string }) {
+  const segments = useMemo(() => splitLangTags(text), [text]);
+
+  if (segments.length === 1 && segments[0].type === 'text') {
+    return <LegacyTextWithCode text={text} searchTerm={searchTerm} />;
+  }
+
+  return (
+    <>
+      {segments.map((segment, index) => {
+        if (segment.type === 'text') {
+          return <LegacyTextWithCode key={index} text={segment.content} searchTerm={searchTerm} />;
+        }
+        if (segment.content.includes('\n')) {
+          const trimmed = segment.content.replace(/^\n/, '').replace(/\n$/, '');
+          return <CodeBlock key={index} content={trimmed} forcedLanguage={segment.language} />;
+        }
+        return (
+          <code
+            key={index}
+            className="rounded-md bg-ink-100 px-1.5 py-0.5 font-mono text-[0.85em] text-ink-700"
+          >
+            {segment.content}
+          </code>
+        );
+      })}
     </>
   );
 }
