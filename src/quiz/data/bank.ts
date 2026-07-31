@@ -65,12 +65,17 @@ const EXAMS: readonly (readonly [certId: string, examNumber: number, questions: 
  * sidebar stats derived from it) is guaranteed to be available on the very
  * first render.
  *
- * `id` is `{examNumber}{questionNumber}`, with the question number
- * zero-padded to 2 digits (exam 4, question 17 -> "417"). The padding is
- * what keeps it collision-free: without it, exam 1 question 17 ("117")
- * would equal exam 11 question 7 ("11" + "7"). This intentionally replaces
- * the older "E{exam}Q{n}" shape, which means existing `question_progress`
- * rows in Supabase keyed by the old ids will no longer match -- a
+ * `id` is `{certId}-{examNumber}{questionNumber}`, with the question number
+ * zero-padded to 2 digits (exam 4, question 17 -> "databricks-dea-417").
+ * The certId prefix is what keeps it collision-free ACROSS certifications
+ * (without it, "databricks-dea exam1 n1" and "microsoft-pl-300 exam1 n1"
+ * would both produce "101" -- confirmed in production, see
+ * scripts/check-duplicate-ids.mjs). The zero-padding keeps it
+ * collision-free WITHIN a certification (without it, exam 1 question 17
+ * -> "117" would equal exam 11 question 7 -> "11" + "7"). This
+ * intentionally replaces the older "{examNumber}{questionNumber}" shape
+ * (no certId prefix), which means existing `question_progress` rows in
+ * Supabase keyed by the old ids will no longer match -- a
  * migration/reset of that table is needed alongside this change.
  */
 export const QUESTION_BANK: SeededQuestion[] = EXAMS.flatMap(([certId, examNumber, questions]) =>
@@ -78,7 +83,7 @@ export const QUESTION_BANK: SeededQuestion[] = EXAMS.flatMap(([certId, examNumbe
     ...question,
     exam: examNumber,
     certId,
-    id: `${examNumber}${String(question.n).padStart(2, '0')}`,
+    id: `${certId}-${examNumber}${String(question.n).padStart(2, '0')}`,
   })),
 );
 

@@ -11,7 +11,6 @@ import { useFavoriteAiQuestions } from '@/quiz/hooks/useFavoriteAiQuestions';
 import { useAuth } from '@/auth/useAuth';
 import { toDisplayQuestion, AiBadge } from '@/quiz/ai/aiDisplay';
 import { useLocale } from '@/shared/i18n/useLocale';
-import { AI_EXAM_QUESTION_COUNT } from '@/quiz/utils/aiExamPlan';
 import type { AiGeneratedQuestion } from '@/quiz/ai/aiQuestions.types';
 import type { DomainId, ProgressMap, Question } from '@/quiz/quiz.types';
 
@@ -99,11 +98,6 @@ export function AiGeneratePage() {
 
   return (
     <div className="rounded-2xl border border-ink-100 bg-surface p-4 shadow-sm">
-      <p className="mb-1 text-xs text-ink-500">
-        {mode === 'topic'
-          ? t('ai.generate.intro')
-          : t('ai.generate.examIntro', { count: AI_EXAM_QUESTION_COUNT })}
-      </p>
       <p className="mb-4 text-xs font-medium text-ink-400">{t('ai.generate.autoSavedNotice')}</p>
 
       <div className="mb-4">
@@ -120,16 +114,6 @@ export function AiGeneratePage() {
             }`}
           >
             {t('ai.generate.modeTopic')}
-          </button>
-          <button
-            type="button"
-            aria-pressed={mode === 'exam'}
-            onClick={() => setMode('exam')}
-            className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
-              mode === 'exam' ? 'bg-action text-white' : 'bg-ink-50 text-ink-500 hover:bg-ink-100'
-            }`}
-          >
-            {t('ai.generate.modeExam')}
           </button>
         </div>
       </div>
@@ -191,9 +175,7 @@ export function AiGeneratePage() {
             isLoading={isGeneratingExam}
             disabled={certDomains.length === 0}
           >
-            {isGeneratingExam
-              ? t('ai.generate.generating')
-              : t('ai.generate.examButton', { count: AI_EXAM_QUESTION_COUNT })}
+            {isGeneratingExam ? t('ai.generate.generating') : t('ai.generate.examButton')}
           </Button>
           {isGeneratingExam && examProgress && (
             <p className="mt-3 text-xs text-ink-500">
