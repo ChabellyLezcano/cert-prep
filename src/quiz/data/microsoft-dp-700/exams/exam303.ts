@@ -1,0 +1,235 @@
+import type { RawQuestion } from '@/quiz/quiz.types';
+
+/**
+ * Third DP-700 question set. Original scenarios completing coverage of
+ * governance/admin delegation, REST API automation, Eventhouse
+ * deployment, dynamic deployment-rule parameters, RLS via security
+ * groups, RBAC granularity, combined workspace+RLS security, broader
+ * governance/monitoring statements, deployment approval gates, invalid
+ * reference validation, secure pipeline authentication, Git rollback,
+ * domain/subdomain role scoping, and endorsement nuances -- grounded in
+ * real skill bullets from the official study guide ("Skills measured as
+ * of July 21, 2026"), not reproduced from any commercial practice-exam
+ * source.
+ */
+export const exam303: RawQuestion[] = [
+  {
+    n: 1,
+    d: 'IMPL',
+    m: 0,
+    q: 'A workspace contains a Lakehouse, a notebook, several reports, and a Power BI dashboard. Content owners want to endorse the most trustworthy items so consumers can identify them at a glance. Which of these items cannot receive an endorsement badge at all?',
+    o: ['The Lakehouse', 'The notebook', 'A report', 'The Power BI dashboard'],
+    a: [3],
+    x: 'Los dashboards de Power BI no admiten badges de endoso (Promoted, Certified o Master data) en Fabric; esa capacidad está disponible para otros tipos de elementos como reports, semantic models, Lakehouses o notebooks. Por eso, si el objetivo es señalar confiabilidad en un dashboard, hay que endosar el reporte o el modelo semántico subyacente en su lugar.',
+  },
+  {
+    n: 2,
+    d: 'IMPL',
+    m: 1,
+    q: 'Which of the following statements about Fabric administration and resiliency are correct? (Choose two.)',
+    o: [
+      'Admin roles can be delegated at the capacity, workspace, or domain level',
+      'Only a single global admin account can manage every capacity in the tenant',
+      'Fabric provides data resiliency and disaster recovery options to help maintain data availability',
+      'Delegated admin roles cannot be scoped below the tenant level',
+    ],
+    a: [0, 2],
+    x: 'Fabric permite delegar roles de administración a nivel de capacity, workspace o domain, evitando que todo dependa de un único admin global -- lo que contradice directamente la segunda opción. Además, Fabric ofrece opciones de resiliencia y recuperación ante desastres para mantener la disponibilidad de los datos. Los roles delegados sí pueden acotarse por debajo del nivel de tenant, así que esa cuarta afirmación también es falsa.',
+  },
+  {
+    n: 3,
+    d: 'IMPL',
+    m: 0,
+    q: 'A platform team wants to script the creation of new workspaces, assign roles automatically, and deploy items as part of a governed, auditable process -- without relying on manual clicks in the portal. Which approach best fits?',
+    o: [
+      'Have each team create and configure its own workspace manually',
+      'Use the Fabric REST APIs to create workspaces, assign roles, and deploy items, integrated with a monitoring/logging system',
+      'Use Power Automate to manually trigger workspace creation whenever someone remembers to',
+      'Track workspace creation and permissions in a shared spreadsheet',
+    ],
+    a: [1],
+    x: 'Las REST APIs de Fabric permiten automatizar y scriptar la creación de workspaces, la asignación de roles y el despliegue de artefactos, y se integran naturalmente con sistemas de monitoreo/logging externos para mantener trazabilidad y auditoría. Las alternativas dependen de procesos manuales o ad hoc que no escalan ni dejan un rastro de auditoría consistente.',
+  },
+  {
+    n: 4,
+    d: 'IMPL',
+    m: 0,
+    q: 'Your deployment pipeline promotes a workspace that includes an Eventhouse used for real-time ingestion, alongside notebooks and a Lakehouse. You need the Eventhouse deployed consistently across Dev, Test, and Prod as part of the same existing process. What should you use?',
+    o: [
+      'A custom PowerShell script run from a notebook',
+      'GitHub Actions configured separately from Fabric',
+      'The Fabric deployment pipeline itself',
+      'An Azure DevOps release pipeline instead of Fabric deployment pipelines',
+    ],
+    a: [2],
+    x: 'El deployment pipeline nativo de Fabric admite Eventhouses igual que Lakehouses, notebooks o semantic models, por lo que basta con incluirlo en el mismo proceso de promoción ya existente entre Dev, Test y Prod. Recurrir a scripts externos o a herramientas separadas de CI/CD añade complejidad innecesaria cuando la funcionalidad ya está integrada de forma nativa.',
+  },
+  {
+    n: 5,
+    d: 'IMPL',
+    m: 0,
+    q: "A team wants reports promoted from Dev to Test to automatically point to the Test database instead of the Dev database, without anyone manually editing each report's connection after every deployment. What Fabric deployment pipeline capability should they configure?",
+    o: [
+      'Manually re-pointing each report after every deployment',
+      'Deployment rules with parameters that adjust dataset connections per stage',
+      'Duplicating the report once per environment and maintaining them separately',
+      'Granting every user Admin access so they can fix connections themselves',
+    ],
+    a: [1],
+    x: 'Las reglas de despliegue con parámetros permiten que un deployment pipeline ajuste dinámicamente las conexiones de datos según la etapa de destino (Dev, Test, Prod), sin intervención manual después de cada promoción. Duplicar reportes por entorno o depender de ediciones manuales repetidas son soluciones frágiles que no escalan y contradicen el objetivo de automatizar el proceso.',
+  },
+  {
+    n: 6,
+    d: 'IMPL',
+    m: 0,
+    q: 'An enterprise wants row-level security enforced consistently across many datasets and workspaces, while minimizing how many individual user permissions need to be maintained over time. What should the RLS rules be based on?',
+    o: [
+      'Individually assigned permissions per user, reviewed quarterly',
+      'Microsoft Entra ID security groups',
+      'Workspace access levels (Admin, Member, Contributor, Viewer) alone',
+      'A separate role created manually for every department',
+    ],
+    a: [1],
+    x: 'Basar las reglas de RLS en grupos de seguridad de Microsoft Entra ID permite gestionar el acceso de forma centralizada y dinámica: agregar o quitar a alguien de un grupo actualiza automáticamente lo que ve, sin tocar permisos individuales en cada dataset. Asignar permisos uno por uno, o crear roles manuales por departamento, multiplica el esfuerzo de mantenimiento a medida que crece la organización.',
+  },
+  {
+    n: 7,
+    d: 'IMPL',
+    m: 1,
+    q: 'Which of the following statements about Role-Based Access Control (RBAC) granularity in Microsoft Fabric are correct? (Choose two.)',
+    o: [
+      'RBAC in Fabric only supports permissions at the workspace level',
+      'RBAC in Fabric supports permissions at the workspace level',
+      'RBAC in Fabric supports permissions at the item level (e.g. a specific Lakehouse or report)',
+      'RBAC in Fabric cannot restrict access to individual columns or tables',
+    ],
+    a: [1, 2],
+    x: 'El RBAC de Fabric opera en varios niveles: workspace, elemento individual (por ejemplo, un Lakehouse o reporte puntual), y también a nivel de objetos de datos como tablas o columnas mediante seguridad a nivel de objeto. Por eso "solo a nivel de workspace" y "no puede restringir columnas o tablas" son ambas afirmaciones falsas -- la granularidad va más allá del workspace.',
+  },
+  {
+    n: 8,
+    d: 'IMPL',
+    m: 0,
+    q: "A finance team needs write access to a Warehouse for their own department's workflow, but each analyst should only see the rows belonging to their assigned region when querying the shared sales table. Which combination of controls addresses both requirements?",
+    o: [
+      'Assign an appropriate workspace role for write access, plus Row-Level Security on the table for row visibility',
+      'Rely on Row-Level Security alone, with every analyst assigned the Admin role',
+      'Rely on the workspace role alone, with no additional security on the table',
+      'Create a separate Warehouse per region and manually route each analyst to theirs',
+    ],
+    a: [0],
+    x: 'Combinar un rol de workspace adecuado (para permitir la escritura) con Row-Level Security sobre la tabla (para filtrar qué filas ve cada analista según su región) cubre ambos requisitos sin duplicar infraestructura. Un rol de workspace por sí solo no filtra filas, y asignar Admin a todos anula cualquier intento de restricción; crear un Warehouse por región es una solución que no escala.',
+  },
+  {
+    n: 9,
+    d: 'MON',
+    m: 1,
+    q: "Which of the following statements about Fabric's security and governance monitoring capabilities are correct? (Choose two.)",
+    o: [
+      'Fabric includes audit logging to track user activity and support compliance efforts',
+      'Fabric integrates with Microsoft Defender for Cloud for threat detection',
+      'Audit logs in Fabric only capture failed sign-in attempts, not data access or modifications',
+      'Sensitivity labels are removed automatically once an item is opened outside of Fabric',
+    ],
+    a: [0, 1],
+    x: 'Fabric ofrece registro de auditoría para rastrear actividad de usuarios (accesos, modificaciones) con fines de cumplimiento, y se integra con Microsoft Defender for Cloud para detección avanzada de amenazas como inicios de sesión sospechosos. Los audit logs cubren mucho más que solo intentos de inicio de sesión fallidos, y las etiquetas de confidencialidad persisten -- no se eliminan -- al salir de Fabric.',
+  },
+  {
+    n: 10,
+    d: 'IMPL',
+    m: 0,
+    q: 'A release manager wants changes to reach Production only after a designated reviewer has explicitly signed off, as part of the existing deployment pipeline flow between Test and Prod. What should be configured?',
+    o: [
+      'Approval stages on the deployment pipeline between Test and Prod',
+      'A shared workspace used directly as Production',
+      'Contributor access for every developer on the Prod workspace',
+      'A manual checklist tracked outside of Fabric with no gate enforced by the pipeline',
+    ],
+    a: [0],
+    x: 'Configurar etapas de aprobación en el deployment pipeline entre Test y Prod obliga a que un revisor designado dé el visto bueno antes de que la promoción se ejecute, integrando el control directamente en el flujo de Fabric. Un checklist externo no impide técnicamente que alguien despliegue sin aprobación, y dar acceso amplio a Prod contradice el objetivo de controlar quién puede promover cambios.',
+  },
+  {
+    n: 11,
+    d: 'IMPL',
+    m: 0,
+    q: 'Before promoting a Warehouse to a new workspace, you want Fabric to check for broken or invalid references (e.g. missing tables referenced by views) and report them, with as little custom tooling as possible. What should you rely on?',
+    o: [
+      'A custom Python validation script run before every deployment',
+      'The built-in validation performed by the deployment pipeline itself',
+      'A manually maintained checklist of known dependencies',
+      'A separate database project used only for reference checking',
+    ],
+    a: [1],
+    x: 'Los deployment pipelines de Fabric validan automáticamente las dependencias del Warehouse durante el proceso de despliegue y señalan referencias inválidas o rotas, sin requerir scripts personalizados. Escribir y mantener validaciones propias, o depender de un checklist manual, implica un esfuerzo de desarrollo que la funcionalidad nativa ya cubre.',
+  },
+  {
+    n: 12,
+    d: 'ING',
+    m: 0,
+    q: 'A pipeline Copy activity moves sensitive financial data from Azure Blob Storage into a Fabric Warehouse. You need to avoid storing any credentials in the pipeline definition while still authenticating securely to the storage account. What should you enable?',
+    o: [
+      'Anonymous access to the storage account for simplicity',
+      'Managed identity authentication for the Copy activity',
+      'Storage account keys embedded directly in the pipeline settings',
+      'Disabling encryption in transit to reduce authentication overhead',
+    ],
+    a: [1],
+    x: 'La autenticación por identidad administrada permite que la actividad Copy se autentique de forma segura contra el recurso de origen sin almacenar claves ni contraseñas en la definición del pipeline, y mantiene el cifrado en tránsito por defecto. Guardar claves de cuenta en el pipeline o usar acceso anónimo va exactamente en contra del objetivo de minimizar el riesgo de exposición de credenciales.',
+  },
+  {
+    n: 13,
+    d: 'IMPL',
+    m: 0,
+    q: 'A team uses Git integration with feature branches and pull requests. After a change is merged and later found to cause issues in production, they need to revert to the previous known-good state. What capability of this setup makes that possible?',
+    o: [
+      "Git's commit history, allowing the team to revert the merge or roll back to a prior commit",
+      'Manually recreating the previous version from memory',
+      'Restoring from a full workspace export taken before the change',
+      'Contacting Fabric support to roll back the workspace',
+    ],
+    a: [0],
+    x: 'Con integración de Git, cada cambio queda registrado en el historial de commits, lo que permite revertir un merge puntual o volver a un commit anterior conocido como bueno, sin depender de exportaciones manuales ni de soporte externo. Esta trazabilidad y capacidad de rollback es justamente uno de los beneficios centrales de usar control de versiones en lugar de copiar archivos manualmente.',
+  },
+  {
+    n: 14,
+    d: 'IMPL',
+    m: 0,
+    q: 'An existing Fabric domain named "Sales" already has an "EastRegion" subdomain. A user only needs to assign one more existing workspace to that subdomain -- no new domain or subdomain needs to be created. Following least privilege, which role is sufficient for that user?',
+    o: [
+      'Fabric admin',
+      'Domain admin (for that domain)',
+      'Workspace admin on the workspace being assigned',
+      'Tenant-wide Global admin',
+    ],
+    a: [1],
+    x: 'Asignar un workspace ya existente a un subdominio ya existente es una operación de administración dentro del dominio, que un Domain admin de ese dominio puede realizar sin necesitar privilegios de Fabric admin (esos se requieren para crear la estructura de dominios/subdominios en sí, no para asignar workspaces a subdominios ya creados). Pedir Fabric admin o Global admin para esta tarea puntual violaría el principio de mínimo privilegio.',
+  },
+  {
+    n: 15,
+    d: 'IMPL',
+    m: 1,
+    q: 'A semantic model with a scheduled refresh policy, configured data source credentials, and role assignments is promoted through a Fabric deployment pipeline to a new stage. Which of the following are NOT automatically carried over to the target stage? (Choose two.)',
+    o: [
+      'The scheduled refresh policy',
+      "The model's structure/definition",
+      'Data source credentials',
+      'Query caching settings that can be inherited from capacity',
+    ],
+    a: [0, 2],
+    x: 'El calendario de actualización programada y las credenciales de origen de datos son dos de las propiedades que un deployment pipeline NO traslada automáticamente al promover un semantic model; deben volver a configurarse en cada etapa. La estructura/definición del modelo sí se despliega, y la configuración de caché de consultas puede heredarse de la capacity de destino sin necesidad de reconfiguración manual.',
+  },
+  {
+    n: 16,
+    d: 'IMPL',
+    m: 0,
+    q: 'The content owner of a report wants to flag it as generally useful and worth reusing, without going through a formal governance review process. A separate compliance team is responsible for certifying items that meet organization-wide quality standards. Which badge should the content owner apply?',
+    o: [
+      'Certified',
+      'Promoted',
+      'Master data',
+      'No badge, since only the compliance team can endorse anything',
+    ],
+    a: [1],
+    x: 'El badge Promoted puede aplicarlo el propio propietario del contenido para señalar que algo es útil y recomendable, sin pasar por un proceso formal de revisión -- a diferencia de Certified, que suele reservarse a revisores autorizados que validan el cumplimiento de estándares organizacionales. Master data se usa para entidades fundacionales de la organización, un caso distinto al de "marcar como útil" un reporte puntual.',
+  },
+];

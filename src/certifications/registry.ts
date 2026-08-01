@@ -61,6 +61,14 @@ export const CERTIFICATIONS: readonly CertificationMeta[] = [
     examGuideVersion: '2026-04-20',
     logoUrl: '/certifications/microsoft-pl-300.svg',
   },
+  {
+    id: 'microsoft-dp-700',
+    name: 'Fabric Data Engineer Associate',
+    acronym: 'DP-700',
+    provider: 'Microsoft',
+    examGuideVersion: '2026-07-21',
+    logoUrl: '/certifications/microsoft-dp-700.svg',
+  },
 ];
 
 /** Every distinct provider across the registry, in first-seen order --
