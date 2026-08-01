@@ -362,6 +362,16 @@ export function QuestionCard({
         <TextWithCode text={question.q} searchTerm={searchTerm} />
       </div>
 
+      {question.image && (
+        <div className="mt-3 overflow-hidden rounded-xl border border-ink-100 bg-ink-50">
+          {/* object-contain + max-h avoids a huge diagram/screenshot pushing
+           * the card taller than the viewport; loading="lazy" keeps long
+           * question lists (mock exam, sidebar-filtered banks) cheap since
+           * most image cards are off-screen at any given time. */}
+          <img src={question.image} alt="" loading="lazy" className="max-h-80 w-full object-contain" />
+        </div>
+      )}
+
       <div className="mt-4 flex flex-col gap-2">
         {displayOrder.map((originalIndex, position) => (
           <OptionButton
