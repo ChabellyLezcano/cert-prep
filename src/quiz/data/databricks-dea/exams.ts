@@ -2,19 +2,19 @@ import type { RawQuestion } from '@/quiz/quiz.types';
 
 export const exam1: RawQuestion[] = [
   {
-    n: 1,
-    d: 'ING',
-    m: 0,
-    q: 'A data engineering team is loading CSV files from cloud storage into a Delta table with COPY INTO. Some files were partially ingested due to a pipeline run failure, and now the team wants to reprocess all files, regardless of whether they were already loaded.\n\nWhat should they use to ensure all files are reprocessed?',
-    o: [
-      "code*COPY_OPTIONS('checkpointing' = 'false')*code",
-      "code*COPY_OPTIONS('overwrite' = 'true')*code",
-      "code*COPY_OPTIONS('force' = 'true')*code",
-      "code*COPY_OPTIONS('idempotency' = 'false')*code",
-    ],
-    a: [2],
-    x: "COPY INTO es idempotente por defecto: registra los archivos ya procesados para evitar duplicados. La opción 'force' = 'true' desactiva ese filtro de seguridad y obliga a releer todos los archivos de la ubicación de origen, incluidos los ya ingeridos.",
-  },
+  "n": 1,
+  "d": "ING",
+  "m": 0,
+  "q": "A data engineering team is loading CSV files from cloud storage into a Delta table with COPY INTO. Some files were partially ingested due to a pipeline run failure, and now the team wants to reprocess all files, regardless of whether they were already loaded.\n\nWhat should they use to ensure all files are reprocessed?",
+  "o": [
+    "code*COPY_OPTIONS('checkpointing' = 'false')*code",
+    "code*COPY_OPTIONS('overwrite' = 'true')*code",
+    "code*COPY_OPTIONS('force' = 'true')*code",
+    "code*COPY_OPTIONS('idempotency' = 'false')*code"
+  ],
+  "a": [2],
+  "x": "COPY INTO es idempotente por defecto: mantiene un registro interno de los archivos ya procesados exitosamente para evitar duplicados en reintentos. Esta idempotencia es una característica de seguridad que protege contra ingestas duplicadas.\n\nPara forzar el reprocesamiento de TODOS los archivos (incluidos los ya ingeridos), se debe usar **'force' = 'true'**. Esta opción bypasea el registro de idempotencia, obligan do a releer todos los archivos de la ubicación de origen sin importar su estado anterior.\n\n**Por qué las otras opciones no funcionan:**\n- 'checkpointing' = 'false': controla puntos de retorno, no la idempotencia\n- 'overwrite' = 'true': sobrescribe la tabla destino (no relea archivos de origen)\n- 'idempotency' = 'false': sintaxis incorrecta; idempotency no es un parámetro COPY_OPTIONS válido"
+},
   {
     n: 2,
     d: 'TRA',
