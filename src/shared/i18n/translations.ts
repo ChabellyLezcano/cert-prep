@@ -105,7 +105,7 @@ export const en = {
   'mockExam.exitFinished': 'Exit mock exam',
   'mockExam.inProgress': 'Mock exam in progress · {answered}/{total} answered',
   'mockExam.draftNotice':
-    'Your answers for this attempt are not saved until you press "Finish exam" — if you exit early, your real progress is untouched. Even if you include questions you\'ve already answered, they\'ll show up blank: this is a fresh attempt.',
+    'Your answers for this attempt are not saved until you press "Finish exam", if you exit early, your real progress is untouched. Even if you include questions you\'ve already answered, they\'ll show up blank: this is a fresh attempt.',
   'mockExam.shortOfTarget':
     "One or more domains didn't have enough eligible questions for this filter; it was topped up with questions from other domains.",
   'mockExam.finish': 'Finish exam',
@@ -124,7 +124,7 @@ export const en = {
 
   // AI generation
   'ai.generate.intro':
-    "Generated from your own study notes for this domain. They aren't saved automatically — use the save button to keep the ones you want in your favorites library.",
+    "Generated from your own study notes for this domain. They aren't saved automatically , use the save button to keep the ones you want in your favorites library.",
   'ai.generate.modeLabel': 'Mode',
   'ai.generate.modeTopic': 'By topic',
   'ai.generate.modeExam': 'Full mock exam',
@@ -133,15 +133,15 @@ export const en = {
   'ai.generate.generating': 'Generating...',
   'ai.generate.button': 'Generate questions',
   'ai.generate.examIntro':
-    'Generates a {count}-question exam mixed across every domain, distributed by the official exam weights — the same way the practice-bank mock exam is built. This runs several requests in the background, so it takes longer than a single-topic batch.',
+    'Generates a {count}-question exam mixed across every domain, distributed by the official exam weights , the same way the practice-bank mock exam is built. This runs several requests in the background, so it takes longer than a single-topic batch.',
   'ai.generate.examButton': 'Generate {count}-question exam',
   'ai.generate.examProgress': 'Generating... block {completed}/{total}',
   'ai.generate.examRateLimited':
-    "Groq's free tier rate limit was reached — waiting {seconds}s before retrying...",
+    "Groq's free tier rate limit was reached , waiting {seconds}s before retrying...",
   'ai.generate.examAllFailed': 'Could not generate any questions for this exam: {reason}',
-  'ai.generate.examPartialFailure': 'Some domains failed to generate ({domains}) — the rest are shown below.',
+  'ai.generate.examPartialFailure': 'Some domains failed to generate ({domains}) , the rest are shown below.',
   'ai.generate.examPartialFailureReason':
-    'These domains failed to generate ({domains}): {reason} — the rest are shown below.',
+    'These domains failed to generate ({domains}): {reason} , the rest are shown below.',
   'ai.generate.autoSavedNotice': 'Questions you get wrong are saved to your AI favorites automatically.',
   'ai.generate.save': 'Save to favorites',
   'ai.generate.saved': 'Saved',
@@ -285,7 +285,7 @@ export const es: Record<TranslationKey, string> = {
   'mockExam.exitFinished': 'Salir del simulacro',
   'mockExam.inProgress': 'Examen simulado en curso · {answered}/{total} respondidas',
   'mockExam.draftNotice':
-    'Tus respuestas de este intento no se guardan hasta que pulses "Finalizar examen" — si sales antes, no se modifica tu progreso real. Aunque incluyas preguntas ya respondidas antes, aparecerán en blanco: es un intento nuevo.',
+    'Tus respuestas de este intento no se guardan hasta que pulses "Finalizar examen", si sales antes, no se modifica tu progreso real. Aunque incluyas preguntas ya respondidas antes, aparecerán en blanco: es un intento nuevo.',
   'mockExam.shortOfTarget':
     'Algún dominio no tenía suficientes preguntas elegibles con este filtro; se completó con preguntas de otros dominios.',
   'mockExam.finish': 'Finalizar examen',
@@ -304,7 +304,7 @@ export const es: Record<TranslationKey, string> = {
 
   // AI generation
   'ai.generate.intro':
-    'Se generan a partir de tus propias notas de estudio de este dominio. No se guardan solas — usa el botón de guardar para conservar las que quieras en tu biblioteca de favoritas.',
+    'Se generan a partir de tus propias notas de estudio de este dominio. No se guardan solas , usa el botón de guardar para conservar las que quieras en tu biblioteca de favoritas.',
   'ai.generate.modeLabel': 'Modo',
   'ai.generate.modeTopic': 'Por tema',
   'ai.generate.modeExam': 'Examen simulacro completo',
@@ -313,16 +313,16 @@ export const es: Record<TranslationKey, string> = {
   'ai.generate.generating': 'Generando...',
   'ai.generate.button': 'Generar preguntas',
   'ai.generate.examIntro':
-    'Genera un examen de {count} preguntas mezclando todos los dominios, repartidas según los pesos oficiales del examen — igual que el examen simulacro del banco de preguntas. Esto lanza varias peticiones en segundo plano, así que tarda más que un bloque de un solo tema.',
+    'Genera un examen de {count} preguntas mezclando todos los dominios, repartidas según los pesos oficiales del examen , igual que el examen simulacro del banco de preguntas. Esto lanza varias peticiones en segundo plano, así que tarda más que un bloque de un solo tema.',
   'ai.generate.examButton': 'Generar examen de {count} preguntas',
   'ai.generate.examProgress': 'Generando... bloque {completed}/{total}',
   'ai.generate.examRateLimited':
-    'Se alcanzó el límite gratuito de Groq — esperando {seconds}s antes de reintentar...',
+    'Se alcanzó el límite gratuito de Groq , esperando {seconds}s antes de reintentar...',
   'ai.generate.examAllFailed': 'No se pudo generar ninguna pregunta para este examen: {reason}',
   'ai.generate.examPartialFailure':
-    'Algunos dominios fallaron al generar ({domains}) — el resto se muestra abajo.',
+    'Algunos dominios fallaron al generar ({domains}) , el resto se muestra abajo.',
   'ai.generate.examPartialFailureReason':
-    'Estos dominios fallaron al generar ({domains}): {reason} — el resto se muestra abajo.',
+    'Estos dominios fallaron al generar ({domains}): {reason} , el resto se muestra abajo.',
   'ai.generate.autoSavedNotice':
     'Las preguntas que fallas se guardan automáticamente en tus favoritas de IA.',
   'ai.generate.save': 'Guardar en favoritas',
