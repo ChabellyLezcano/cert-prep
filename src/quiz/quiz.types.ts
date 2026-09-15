@@ -87,6 +87,7 @@ export type QuestionStatus = 'all' | 'pending' | 'wrong' | 'right';
 /** Per-question progress, persisted in Supabase and mirrored in local state */
 export interface QuestionProgress {
   questionId: string;
+  certId: string;
   ok: boolean;
   picked: number[];
   revealed: boolean;

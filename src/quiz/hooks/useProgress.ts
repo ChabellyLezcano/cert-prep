@@ -3,12 +3,10 @@ import { supabase } from '../../shared/lib/supabaseClient';
 import { sameMembers } from '../../shared/utils/arrays';
 import type { ProgressMap, Question, QuestionProgress } from '../quiz.types';
 
-/** Pure builders for a graded/revealed progress entry — exported so other
- * code (e.g. the mock exam's local draft state) can compute the exact same
- * "is this correct" logic without duplicating it or going through Supabase. */
 export function buildGradedEntry(question: Question, picked: number[]): QuestionProgress {
   return {
     questionId: question.id,
+    certId: question.certId,
     ok: sameMembers(picked, question.a),
     picked,
     revealed: false,
@@ -19,6 +17,7 @@ export function buildGradedEntry(question: Question, picked: number[]): Question
 export function buildRevealedEntry(question: Question): QuestionProgress {
   return {
     questionId: question.id,
+    certId: question.certId,
     ok: false,
     picked: [],
     revealed: true,
@@ -36,9 +35,6 @@ export interface UseProgressResult {
   resetAll: () => void;
 }
 
-/** Loads and persists question progress for the signed-in user in Supabase.
- * Writes are applied to local state immediately (optimistic) and synced in
- * the background so the UI never blocks on network latency. */
 export function useProgress(userId: string | null): UseProgressResult {
   const [progress, setProgress] = useState<ProgressMap>({});
   const [isLoading, setIsLoading] = useState(true);
@@ -76,6 +72,7 @@ export function useProgress(userId: string | null): UseProgressResult {
         (data ?? []).forEach((row) => {
           map[row.question_id] = {
             questionId: row.question_id,
+            certId: row.cert_id,
             ok: row.ok,
             picked: row.picked,
             revealed: row.revealed,
@@ -100,6 +97,7 @@ export function useProgress(userId: string | null): UseProgressResult {
           {
             user_id: userId,
             question_id: entry.questionId,
+            cert_id: entry.certId,
             ok: entry.ok,
             picked: entry.picked,
             revealed: entry.revealed,
