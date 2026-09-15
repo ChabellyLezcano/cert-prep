@@ -161,6 +161,7 @@ export type Database = {
       };
       question_progress: {
         Row: {
+          cert_id: string;
           id: string;
           ok: boolean;
           picked: number[];
@@ -170,6 +171,7 @@ export type Database = {
           user_id: string;
         };
         Insert: {
+          cert_id: string;
           id?: string;
           ok?: boolean;
           picked?: number[];
@@ -179,6 +181,7 @@ export type Database = {
           user_id: string;
         };
         Update: {
+          cert_id?: string;
           id?: string;
           ok?: boolean;
           picked?: number[];
@@ -188,6 +191,13 @@ export type Database = {
           user_id?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: 'question_progress_cert_id_fkey';
+            columns: ['cert_id'];
+            isOneToOne: false;
+            referencedRelation: 'certifications';
+            referencedColumns: ['id'];
+          },
           {
             foreignKeyName: 'question_progress_question_id_fkey';
             columns: ['question_id'];
