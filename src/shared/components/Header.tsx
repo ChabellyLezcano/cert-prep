@@ -7,12 +7,6 @@ import { LanguageSettings } from '@/shared/components/LanguageSettings';
 import { getCertification } from '@/certifications/registry';
 import { useLocale } from '@/shared/i18n/useLocale';
 
-/**
- * App header, pinned with `position: fixed` so it stays visible while
- * scrolling. Forwards its ref so AppLayout can measure its rendered height
- * (it can vary with locale text length or mobile wrapping) and reserve
- * matching space above the page content.
- */
 export const Header = forwardRef<HTMLElement>(function Header(_props, ref) {
   const { certId } = useParams<{ certId: string }>();
   const { t } = useLocale();
@@ -58,11 +52,6 @@ export const Header = forwardRef<HTMLElement>(function Header(_props, ref) {
             to={`${base}/mock-exam`}
             icon={<FileText className="h-4 w-4 shrink-0" />}
             label={t('nav.mockExam')}
-          />
-          <TabLink
-            to={`${base}/ai-generate`}
-            icon={<Sparkles className="h-4 w-4 shrink-0" />}
-            label={t('nav.aiGenerate')}
           />
           <TabLink
             to={`${base}/ai-favorites`}
