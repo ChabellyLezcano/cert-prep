@@ -42,10 +42,10 @@
 
 ## Currently loaded certifications
 
-| Certification | Exam guide version | Questions | Glossary | Study topics | Domains |
-| --- | --- | --- | --- | --- | --- |
-| 🧱 **Databricks Certified Data Engineer Associate** | May 4, 2026 | 528 (11 exams) | 264 terms | 39 topics | 7 / 7 official |
-| ☁️ **AWS Certified Solutions Architect – Associate** (SAA-C03) | — | 2 *(seed check)* | 3 terms | 1 topic | 1 / 4 official |
+| Certification                                                  | Exam guide version | Questions        | Glossary  | Study topics | Domains        |
+| -------------------------------------------------------------- | ------------------ | ---------------- | --------- | ------------ | -------------- |
+| 🧱 **Databricks Certified Data Engineer Associate**            | May 4, 2026        | 528 (11 exams)   | 264 terms | 39 topics    | 7 / 7 official |
+| ☁️ **AWS Certified Solutions Architect – Associate** (SAA-C03) | —                  | 2 _(seed check)_ | 3 terms   | 1 topic      | 1 / 4 official |
 
 > The AWS SAA content is intentionally minimal — it exists to validate that the
 > platform genuinely supports more than one certification, not just Databricks
@@ -78,16 +78,16 @@ engine code." See [Adding a new certification](#adding-a-new-certification).
 
 ## Tech stack
 
-| Layer | Tools |
-| --- | --- |
-| Framework | React 19 + TypeScript (strict mode) + Vite |
-| Routing | React Router (certification-scoped) |
-| Backend | Supabase (`@supabase/supabase-js`) — auth, content, progress |
-| Styling | Tailwind CSS v4, Poppins font, CSS-variable-based theming |
-| Validation | Zod |
-| Testing | Vitest + Testing Library (80%+ coverage) |
-| Tooling | ESLint + Prettier + Husky/lint-staged |
-| Deployment | Docker + Nginx |
+| Layer      | Tools                                                        |
+| ---------- | ------------------------------------------------------------ |
+| Framework  | React 19 + TypeScript (strict mode) + Vite                   |
+| Routing    | React Router (certification-scoped)                          |
+| Backend    | Supabase (`@supabase/supabase-js`) — auth, content, progress |
+| Styling    | Tailwind CSS v4, Poppins font, CSS-variable-based theming    |
+| Validation | Zod                                                          |
+| Testing    | Vitest + Testing Library (80%+ coverage)                     |
+| Tooling    | ESLint + Prettier + Husky/lint-staged                        |
+| Deployment | Docker + Nginx                                               |
 
 ## Project structure
 
@@ -171,7 +171,7 @@ Thanks to the aggregator pattern, this is almost entirely a data-authoring task:
    `glossary: RawGlossaryTerm[]` (`{ t, c, d, k?, r? }`).
 6. **Exam facts** — create `src/study/data/<certId>/examMeta.ts` exporting
    `examMeta: ExamMeta` (`{ cert, version, facts, resources }`).
-7. **Study guide** *(optional)* — create `src/guide/data/<certId>/topics/*.ts`
+7. **Study guide** _(optional)_ — create `src/guide/data/<certId>/topics/*.ts`
    files, each exporting one array of `RawStudyTopic`
    (`{ id, domain, order, title, summary, contentMd }`) — any export name
    works, the aggregator takes every array a file exports.
@@ -209,13 +209,13 @@ or the catalog page — they all discover certifications dynamically via
    (`https://supabase.com/dashboard/project/<project-ref>`). This applies
    every file under `supabase/migrations/` in order:
 
-   | Migration | Purpose |
-   | --- | --- |
-   | `0001_init.sql` | `question_progress` (per-user answers) with row-level security |
-   | `0002_content.sql` | `questions` and `glossary_terms` (shared, read-only content), linked to `question_progress` |
-   | `0003_study_guide.sql` | `study_topics` (long-form notes per domain) |
+   | Migration                 | Purpose                                                                                               |
+   | ------------------------- | ----------------------------------------------------------------------------------------------------- |
+   | `0001_init.sql`           | `question_progress` (per-user answers) with row-level security                                        |
+   | `0002_content.sql`        | `questions` and `glossary_terms` (shared, read-only content), linked to `question_progress`           |
+   | `0003_study_guide.sql`    | `study_topics` (long-form notes per domain)                                                           |
    | `0004_certifications.sql` | `certifications` and `domains` as first-class tables, so content isn't tied to a single certification |
-   | `0005_aws_saa.sql` | Seeds the `certifications`/`domains` rows for AWS SAA |
+   | `0005_aws_saa.sql`        | Seeds the `certifications`/`domains` rows for AWS SAA                                                 |
 
    If a project already had earlier migrations applied by hand (e.g. pasted
    into the SQL editor before this CLI setup existed), mark them as already
@@ -255,23 +255,23 @@ progress will be saved to Supabase automatically. You'll land on
 
 ### Available scripts
 
-| Script | Description |
-| --- | --- |
-| `npm run dev` | Start the Vite dev server |
-| `npm run build` | Type-check and build for production |
-| `npm run preview` | Preview the production build locally |
-| `npm run db:seed` | Push every certification's content from `src/*/data` into Supabase |
-| `npm run db:migrate` | Apply pending SQL migrations to the linked Supabase project |
-| `npm run db:migrate:new` | Scaffold a new empty migration file |
-| `npm run db:migrate:diff` | Diff the linked remote DB against local migrations |
-| `npm run lint` | Run ESLint |
-| `npm run lint:fix` | Run ESLint with autofix |
-| `npm run format` | Format the codebase with Prettier |
-| `npm run format:check` | Check formatting without writing |
-| `npm run typecheck` | Type-check the app |
-| `npm run typecheck:scripts` | Type-check `scripts/seed.ts` |
-| `npm test` | Run the unit/component test suite |
-| `npm run test:coverage` | Run tests with a coverage report |
+| Script                      | Description                                                        |
+| --------------------------- | ------------------------------------------------------------------ |
+| `npm run dev`               | Start the Vite dev server                                          |
+| `npm run build`             | Type-check and build for production                                |
+| `npm run preview`           | Preview the production build locally                               |
+| `npm run db:seed`           | Push every certification's content from `src/*/data` into Supabase |
+| `npm run db:migrate`        | Apply pending SQL migrations to the linked Supabase project        |
+| `npm run db:migrate:new`    | Scaffold a new empty migration file                                |
+| `npm run db:migrate:diff`   | Diff the linked remote DB against local migrations                 |
+| `npm run lint`              | Run ESLint                                                         |
+| `npm run lint:fix`          | Run ESLint with autofix                                            |
+| `npm run format`            | Format the codebase with Prettier                                  |
+| `npm run format:check`      | Check formatting without writing                                   |
+| `npm run typecheck`         | Type-check the app                                                 |
+| `npm run typecheck:scripts` | Type-check `scripts/seed.ts`                                       |
+| `npm test`                  | Run the unit/component test suite                                  |
+| `npm run test:coverage`     | Run tests with a coverage report                                   |
 
 ### Docker
 
