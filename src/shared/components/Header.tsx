@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, forwardRef, type ReactNode } from 'react';
 import { Link, NavLink, useParams } from 'react-router-dom';
-import { BookOpen, FileText, Sparkles, Star, RotateCcw } from 'lucide-react';
+import { BookOpen, FileText, Star, RotateCcw } from 'lucide-react';
 import { useAuth } from '@/auth/useAuth';
 import { ThemeToggle } from '@/shared/components/ThemeToggle';
 import { LanguageSettings } from '@/shared/components/LanguageSettings';
