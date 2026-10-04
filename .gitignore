@@ -15,6 +15,8 @@ apply-redesign.mjs
 
 # Testing
 coverage
+playwright-report
+.playwright
 
 # Editor / OS
 .DS_Store
