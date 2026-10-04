@@ -344,35 +344,17 @@ We welcome contributions! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for gui
 
 ## Quality & Security
 
-### Code Quality
+What CI enforces on every push and pull request (`.github/workflows/`):
 
-- ✅ **TypeScript strict mode** — all code is type-safe
-- ✅ **ESLint + Prettier** — enforced via pre-commit hooks
-- ✅ **80%+ test coverage** — unit, component, and E2E tests
-- ✅ **Performance monitoring** — Core Web Vitals tracking (LCP, CLS, FID)
+- **Static checks** — ESLint, TypeScript strict mode (app and seed script) and Prettier.
+- **Tests** — Vitest with coverage thresholds of 80% (lines, functions, branches, statements), plus
+  Playwright end-to-end smoke tests (Chromium) for the auth pages, routing guard and theme.
+- **Build** — production build with Vite.
+- **Security** — `npm audit` (fails on high/critical), gitleaks secret scan and CodeQL analysis.
 
-### Security
-
-- 🔒 **No secrets in code** — `.env` is in `.gitignore`
-- 🔒 **Input validation** — all user inputs validated with Zod
-- 🔒 **Row-level security** — Supabase RLS enforces data access
-- 🔒 **Dependency scanning** — GitHub Dependabot monitors vulnerabilities
-- 🔒 **Secret scanning** — gitleaks prevents accidental commits
-
-### Accessibility (WCAG AA)
-
-- ♿ **Semantic HTML** — proper heading hierarchy, landmark regions
-- ♿ **Color contrast** — 4.5:1 minimum for text (WCAG AA)
-- ♿ **Keyboard navigation** — full app navigable via keyboard
-- ♿ **Screen reader support** — ARIA labels and roles where needed
-- ♿ **Reduced motion** — respects `prefers-reduced-motion`
-
-### Performance
-
-- 📊 **Lazy loading** — routes loaded on-demand
-- 📊 **Bundle splitting** — vendor chunks (React, Supabase) separate
-- 📊 **Code splitting** — dynamic imports for large features
-- 📊 **Monitoring** — performance metrics logged and tracked
+Runtime safeguards: a global error boundary, startup validation of the required `VITE_SUPABASE_*`
+variables, Zod validation of the auth forms, and Supabase row-level security on the user-owned tables.
+See [SECURITY.md](SECURITY.md) and [DEPLOYMENT.md](DEPLOYMENT.md) for details.
 
 ---
 
