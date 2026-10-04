@@ -6,6 +6,7 @@ import { AuthGuard } from '@/auth/AuthGuard';
 import { LoginPage } from '@/auth/LoginPage';
 import { SignupPage } from '@/auth/SignupPage';
 import { AppLayout } from '@/shared/components/AppLayout';
+import { ErrorBoundary } from '@/shared/components/ErrorBoundary';
 import { InlineSpinner } from '@/shared/components/InlineSpinner';
 import { ThemeProvider } from '@/shared/theme/ThemeProvider';
 import { LocaleProvider } from '@/shared/i18n/LocaleContext';
@@ -35,15 +36,17 @@ const CertificationsPage = lazyWithReload(
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <LocaleProvider>
-        <BrowserRouter>
-          <AuthProvider>
-            <AppRoutes />
-          </AuthProvider>
-        </BrowserRouter>
-      </LocaleProvider>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <LocaleProvider>
+          <BrowserRouter>
+            <AuthProvider>
+              <AppRoutes />
+            </AuthProvider>
+          </BrowserRouter>
+        </LocaleProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 

@@ -272,6 +272,32 @@ progress will be saved to Supabase automatically. You'll land on
 | `npm run typecheck:scripts` | Type-check `scripts/seed.ts`                                       |
 | `npm test`                  | Run the unit/component test suite                                  |
 | `npm run test:coverage`     | Run tests with a coverage report                                   |
+| `npm run e2e`               | Run end-to-end tests with Playwright                               |
+| `npm run e2e:ui`            | Run E2E tests in interactive UI mode                               |
+| `npm run e2e:debug`         | Run E2E tests in debug mode with DevTools                          |
+| `npm run verify`            | Run full verification suite (format + type + lint + build + tests) |
+
+### Testing
+
+**Unit & Component Tests**
+
+```bash
+npm test              # Run tests once
+npm run test:watch    # Run tests in watch mode
+npm run test:coverage # Generate coverage report
+```
+
+Tests use [Vitest](https://vitest.dev/) + [Testing Library](https://testing-library.com/). Maintain **80%+ code coverage**.
+
+**End-to-End Tests**
+
+```bash
+npm run e2e           # Run all E2E tests (headless)
+npm run e2e:ui        # Run tests in interactive UI (recommended for development)
+npm run e2e:debug     # Debug tests with DevTools
+```
+
+E2E tests use [Playwright](https://playwright.dev/) and test real user workflows across multiple browsers. See [e2e/README.md](e2e/README.md) for details.
 
 ### Docker
 
@@ -305,6 +331,48 @@ one-off data-loading step, not part of the container image.
 - The seed script **upserts** by `id` (questions) / `term` (glossary), so
   re-running it after an edit updates existing rows instead of duplicating
   them.
+
+## Contributing
+
+We welcome contributions! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on:
+
+- Code style and standards
+- Testing requirements
+- Commit message format
+- Pull request process
+- Adding new certifications
+
+## Quality & Security
+
+### Code Quality
+
+- ✅ **TypeScript strict mode** — all code is type-safe
+- ✅ **ESLint + Prettier** — enforced via pre-commit hooks
+- ✅ **80%+ test coverage** — unit, component, and E2E tests
+- ✅ **Performance monitoring** — Core Web Vitals tracking (LCP, CLS, FID)
+
+### Security
+
+- 🔒 **No secrets in code** — `.env` is in `.gitignore`
+- 🔒 **Input validation** — all user inputs validated with Zod
+- 🔒 **Row-level security** — Supabase RLS enforces data access
+- 🔒 **Dependency scanning** — GitHub Dependabot monitors vulnerabilities
+- 🔒 **Secret scanning** — gitleaks prevents accidental commits
+
+### Accessibility (WCAG AA)
+
+- ♿ **Semantic HTML** — proper heading hierarchy, landmark regions
+- ♿ **Color contrast** — 4.5:1 minimum for text (WCAG AA)
+- ♿ **Keyboard navigation** — full app navigable via keyboard
+- ♿ **Screen reader support** — ARIA labels and roles where needed
+- ♿ **Reduced motion** — respects `prefers-reduced-motion`
+
+### Performance
+
+- 📊 **Lazy loading** — routes loaded on-demand
+- 📊 **Bundle splitting** — vendor chunks (React, Supabase) separate
+- 📊 **Code splitting** — dynamic imports for large features
+- 📊 **Monitoring** — performance metrics logged and tracked
 
 ---
 

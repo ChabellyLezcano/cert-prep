@@ -17,6 +17,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "e2e": "playwright test --project=chromium",
+    "e2e:ui": "playwright test --ui",
+    "e2e:debug": "playwright test --debug",
     "db:seed": "vite-node scripts/seed.ts",
     "upload-question-images": "vite-node scripts/upload-question-images.ts",
     "translate-questions": "vite-node scripts/translate-questions.ts",
@@ -24,7 +27,7 @@
     "db:migrate:new": "supabase migration new",
     "db:migrate:diff": "supabase db diff --linked",
     "prepare": "husky",
-    "verify": "pnpm run format && pnpm run typecheck && pnpm run typecheck:scripts && pnpm run lint && pnpm run format:check && pnpm run build && pnpm run test"
+    "verify": "pnpm run format && pnpm run typecheck && pnpm run typecheck:scripts && pnpm run lint && pnpm run format:check && pnpm run build && pnpm run test && pnpm run e2e"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
@@ -68,6 +71,7 @@
     "husky": "^9.1.7",
     "jsdom": "^30.0.0",
     "lint-staged": "^17.1.0",
+    "@playwright/test": "^1.48.0",
     "prettier": "^3.9.5",
     "tailwindcss": "^4.3.2",
     "typescript": "~6.0.3",
