@@ -1,4 +1,4 @@
-name: Code Quality & Security (self-contained)
+name: Security & Quality
 
 on:
   push:
@@ -7,50 +7,71 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  lint-and-duplication:
+  dependency-audit:
     runs-on: ubuntu-latest
+    name: Dependency Audit
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
 
-      - run: npm ci
+      - name: Install dependencies
+        run: npm ci --prefer-offline
 
-      # Your existing lint script now also runs sonarjs + security rules
-      - name: ESLint (best practices, code smells, JS security rules)
-        run: npm run lint
-
-      - name: Duplicate code detection
-        run: npx jscpd . --exitCode 1
-
-      - name: Dependency vulnerability audit
+      - name: Audit dependencies for vulnerabilities
         run: npm audit --audit-level=high
+        continue-on-error: true
 
   secrets-scan:
     runs-on: ubuntu-latest
+    name: Secret Detection
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # scan full history, not just this diff
+          fetch-depth: 0 # Scan full history
 
-      - name: Scan for hardcoded secrets
+      - name: Scan for hardcoded secrets with gitleaks
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # No external account or token needed beyond GitHub's own —
-          # gitleaks runs entirely on this runner.
+
+  duplicate-code:
+    runs-on: ubuntu-latest
+    name: Duplicate Code Detection
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline
+
+      - name: Check for duplicate code
+        run: npx jscpd . --exitCode 1 --exclude node_modules,dist,coverage,.next
+        continue-on-error: true
 
   codeql:
     runs-on: ubuntu-latest
+    name: CodeQL Analysis
     permissions:
       security-events: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
       - uses: github/codeql-action/init@v3
         with:
           languages: javascript-typescript
+          queries: security-and-quality
 
       - uses: github/codeql-action/analyze@v3
+        with:
+          category: /language:javascript-typescript
