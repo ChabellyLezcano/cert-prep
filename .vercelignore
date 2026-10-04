@@ -12,7 +12,7 @@ LICENSE
 .vscode
 .DS_Store
 node_modules
-*.md
+
 playwright-report
 coverage
 tests

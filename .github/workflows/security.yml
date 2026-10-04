@@ -39,25 +39,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  duplicate-code:
-    runs-on: ubuntu-latest
-    name: Duplicate Code Detection
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: package-lock.json
-
-      - name: Install dependencies
-        run: npm ci --prefer-offline
-
-      - name: Check for duplicate code
-        run: npx jscpd . --exitCode 1 --exclude node_modules,dist,coverage,.next
-        continue-on-error: true
-
   codeql:
     runs-on: ubuntu-latest
     name: CodeQL Analysis

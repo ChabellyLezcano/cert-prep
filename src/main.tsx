@@ -3,7 +3,6 @@ import { createRoot } from 'react-dom/client';
 import './styles/index.css';
 import App from './app/App';
 import { logger } from '@/shared/utils/logger';
-import { initPerformanceMonitoring } from '@/shared/utils/performance';
 
 // Validate required environment variables
 function validateEnv() {
@@ -27,7 +26,6 @@ function validateEnv() {
 
 try {
   validateEnv();
-  initPerformanceMonitoring();
 } catch (error) {
   logger.error('Failed to initialize app', {
     error: error instanceof Error ? error.message : String(error),

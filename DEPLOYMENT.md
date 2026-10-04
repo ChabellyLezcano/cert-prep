@@ -36,10 +36,10 @@ vercel
 
 In Vercel Dashboard → Settings → Environment Variables, add:
 
-| Variable | Value | Note |
-|----------|-------|------|
-| `VITE_SUPABASE_URL` | `https://xxxx.supabase.co` | From Supabase dashboard |
-| `VITE_SUPABASE_ANON_KEY` | `eyJhbGciOiJI...` | Public anon key (safe) |
+| Variable                 | Value                      | Note                    |
+| ------------------------ | -------------------------- | ----------------------- |
+| `VITE_SUPABASE_URL`      | `https://xxxx.supabase.co` | From Supabase dashboard |
+| `VITE_SUPABASE_ANON_KEY` | `eyJhbGciOiJI...`          | Public anon key (safe)  |
 
 ⚠️ **Never add `SUPABASE_SERVICE_ROLE_KEY`** — it's only for local development.
 
@@ -187,7 +187,7 @@ graph LR
     C -->|✅ Code Review| D["Merge to main"]
     D -->|✅ CI Pass| E["Vercel Deploy"]
     E -->|🚀 Live| F["Production"]
-    
+
     B -->|❌ Fail| G["Fix & Push"]
     G -->|Retry| B
 ```
@@ -228,6 +228,7 @@ If metrics spike:
 ### Deployment Failed
 
 **Check:**
+
 ```bash
 vercel logs [deployment-id]  # View logs
 vercel env ls                 # Verify env vars
@@ -236,12 +237,12 @@ npm run build                # Test build locally
 
 **Common Issues:**
 
-| Issue | Solution |
-|-------|----------|
-| Missing env vars | Add in Vercel Dashboard → Settings |
-| Build timeout | Increase memory or optimize build |
-| 404 errors | Check `vercel.json` rewrites for SPA |
-| CORS errors | Verify Supabase CORS config |
+| Issue            | Solution                             |
+| ---------------- | ------------------------------------ |
+| Missing env vars | Add in Vercel Dashboard → Settings   |
+| Build timeout    | Increase memory or optimize build    |
+| 404 errors       | Check `vercel.json` rewrites for SPA |
+| CORS errors      | Verify Supabase CORS config          |
 
 ### App Won't Load
 
@@ -264,6 +265,7 @@ npm run build                # Test build locally
 If something breaks:
 
 **In Vercel Dashboard:**
+
 1. Deployments → Find previous working version
 2. Click "..." → Promote to Production
 3. Done! ✅

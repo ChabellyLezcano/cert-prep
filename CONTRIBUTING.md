@@ -59,6 +59,7 @@ Optional footer with issue references: Closes #123
 Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `ci`
 
 Examples:
+
 ```
 feat(quiz): add keyboard navigation support
 fix(auth): resolve JWT token expiration handling
@@ -187,6 +188,7 @@ The app must be accessible to everyone.
 - Reduced motion: respect `prefers-reduced-motion`
 
 Test with:
+
 - Browser DevTools → Lighthouse → Accessibility
 - Screen readers (VoiceOver on Mac, Narrator on Windows)
 - Keyboard only (no mouse)

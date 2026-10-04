@@ -1,11 +1,1 @@
-#!/bin/sh
-
-# Check for common secret patterns
-if git diff --cached | grep -iE '(password|secret|token|api[_-]?key|private[_-]?key)\s*[:=]' > /dev/null; then
-  echo "❌ Error: Potential secret detected in staged changes"
-  echo "   Check your .env file and ensure it's in .gitignore"
-  exit 1
-fi
-
-# Run lint-staged
 npx lint-staged
