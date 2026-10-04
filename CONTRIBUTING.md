@@ -100,7 +100,7 @@ npm run test:coverage
 - Unit tests: isolated logic, fast, no side effects
 - Component tests: user interactions, accessibility
 - Use Testing Library for React components
-- Mock Supabase calls with `@testing-library/react`
+- Mock the Supabase client with `vi.mock`
 - Files: `*.test.ts` / `*.test.tsx`
 
 ### Test File Naming
@@ -217,7 +217,7 @@ Test with:
 ## Deployment
 
 - Merges to `main` trigger CI/CD
-- Production deployments are manual after CI passes
+- Vercel deploys production automatically from `main` (see DEPLOYMENT.md)
 - Docker: `docker compose up --build`
 
 ## Getting Help
