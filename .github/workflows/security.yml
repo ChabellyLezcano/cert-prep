@@ -24,7 +24,6 @@ jobs:
 
       - name: Audit dependencies for vulnerabilities
         run: npm audit --audit-level=high
-        continue-on-error: true
 
   secrets-scan:
     runs-on: ubuntu-latest
