@@ -15,7 +15,7 @@
  * `options`) before importing. Domains are keyword-based guesses; adjust them
  * in the JSON if one is wrong.
  */
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import process from 'node:process';
 import { parsePracticeSet } from './lib/practiceSetParser';
@@ -32,17 +32,30 @@ function main() {
   if (!SUPPORTED_CERTS.includes(certId)) throw new Error(`Unsupported certId "${certId}"`);
 
   const input = join('private-data', 'raw', certId, `set${String(setNumber).padStart(2, '0')}.txt`);
-  if (!existsSync(input)) throw new Error(`Input not found: ${input}`);
   const examNumber = EXAM_OFFSET + setNumber;
   const outDir = join('private-data', certId);
   const output = join(outDir, `exam${examNumber}.json`);
-  if (existsSync(output) && !flags.includes('--force')) {
-    throw new Error(`${output} already exists (it may contain hand edits). Use --force to overwrite.`);
-  }
 
-  const { questions, unresolved, malformed } = parsePracticeSet(readFileSync(input, 'utf8'));
+  let raw: string;
+  try {
+    raw = readFileSync(input, 'utf8');
+  } catch (error) {
+    throw new Error(`Input not found: ${input}`, { cause: error });
+  }
+  const { questions, unresolved, malformed } = parsePracticeSet(raw);
   mkdirSync(outDir, { recursive: true });
-  writeFileSync(output, `${JSON.stringify(questions, null, 2)}\n`);
+  try {
+    writeFileSync(output, `${JSON.stringify(questions, null, 2)}\n`, {
+      flag: flags.includes('--force') ? 'w' : 'wx',
+    });
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'EEXIST') {
+      throw new Error(`${output} already exists (it may contain hand edits). Use --force to overwrite.`, {
+        cause: error,
+      });
+    }
+    throw error;
+  }
 
   const domains = questions.reduce<Record<string, number>>(
     (acc, q) => ({ ...acc, [q.domain]: (acc[q.domain] ?? 0) + 1 }),

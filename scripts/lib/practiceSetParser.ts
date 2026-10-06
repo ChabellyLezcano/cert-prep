@@ -130,7 +130,11 @@ function splitOptions(pre: string[], explanation: string, stemHint: string) {
 }
 
 function findCorrectIndexes(explanation: string, options: string[]): number[] {
-  const cut = explanation.search(/^\s*Incorrect\b|Why Other Options Are Incorrect/im);
+  const cuts = [
+    explanation.search(/^\s*Incorrect\b/im),
+    explanation.search(/Why Other Options Are Incorrect/i),
+  ].filter((i) => i !== -1);
+  const cut = cuts.length ? Math.min(...cuts) : -1;
   const correctPart = cut === -1 ? explanation : explanation.slice(0, cut);
 
   const letters = new Set(
