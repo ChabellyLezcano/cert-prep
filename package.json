@@ -23,6 +23,8 @@
     "db:seed": "vite-node scripts/seed.ts",
     "upload-question-images": "vite-node scripts/upload-question-images.ts",
     "translate-questions": "vite-node scripts/translate-questions.ts",
+    "db:convert-private": "vite-node scripts/convert-private-questions.ts",
+    "db:import-private": "vite-node scripts/import-private-questions.ts",
     "db:migrate": "npx supabase@latest db push",
     "db:migrate:new": "supabase migration new",
     "db:migrate:diff": "supabase db diff --linked",
@@ -86,6 +88,7 @@
     "nanoid": "^3.3.18",
     "browserslist": "^4.29.3",
     "undici": "^8.11.2",
-    "baseline-browser-mapping": "^2.11.27"
+    "baseline-browser-mapping": "^2.11.27",
+    "source-map-js": "^1.2.2"
   }
 }

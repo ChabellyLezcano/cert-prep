@@ -30,3 +30,6 @@ yarn-debug.log*
 yarn-error.log*
 *.tsbuildinfo
 test-results
+
+# Personal, licensed content that must never be published
+private-data
