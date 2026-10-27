@@ -25,6 +25,7 @@
     "translate-questions": "vite-node scripts/translate-questions.ts",
     "db:convert-private": "vite-node scripts/convert-private-questions.ts",
     "db:import-private": "vite-node scripts/import-private-questions.ts",
+    "db:convert-private-json": "vite-node scripts/convert-practice-json.ts",
     "db:migrate": "npx supabase@latest db push",
     "db:migrate:new": "supabase migration new",
     "db:migrate:diff": "supabase db diff --linked",
